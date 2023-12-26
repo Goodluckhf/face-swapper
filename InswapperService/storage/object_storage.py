@@ -8,7 +8,7 @@ from exceptions import TargetException
 
 class ObjectStorage:
 
-    __bucket = 'data'
+    __bucket = os.environ.get('BUCKET')
     
     __client = Minio(
         endpoint=os.environ.get('ENDPOINT'),
@@ -19,6 +19,10 @@ class ObjectStorage:
 
     @staticmethod
     def save_file(name: str, bytes: io.BytesIO):
+        current_bucket = ObjectStorage.__client.bucket_exists(ObjectStorage.__bucket)
+        if not current_bucket:
+            ObjectStorage.__client.make_bucket(ObjectStorage.__bucket)
+
         return ObjectStorage.__client.put_object(ObjectStorage.__bucket, name, bytes, len(bytes.getvalue()))
 
     @staticmethod

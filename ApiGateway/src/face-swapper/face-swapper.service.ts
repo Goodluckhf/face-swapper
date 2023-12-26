@@ -16,7 +16,6 @@ export class FaceSwapperService {
     file: Express.Multer.File,
     target: string,
   ): Promise<Pick<JobResult, 'id'>> {
-    console.log(this.configService.get('API'));
     const form = new FormData();
     form.append(
       'source',

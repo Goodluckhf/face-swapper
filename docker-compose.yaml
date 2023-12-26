@@ -2,9 +2,9 @@ version: "2"
 x-environment: &env
   - CELERY_BROKER_URL=redis://redis:6379/0
   - CELERY_RESULT_BACKEND=redis://redis:6379/0
-  - ACCESS_KEY=q3KghOkWUPJFFdM2Q2MC
-  - SECRET_KEY=BSOqGjkBKhmEtm0FkvN1Js6nwjyzenQing3AbtnG
-  - ENDPOINT=host.docker.internal:9000
+  - ACCESS_KEY=minioadmin
+  - SECRET_KEY=minioadmin
+  - ENDPOINT=minio:9000
   - BUCKET=data
 
 services:
@@ -30,8 +30,7 @@ services:
       - redis
     volumes:
       - app-volume:/usr/src/app/
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+
     
   api:
     build:
@@ -44,6 +43,17 @@ services:
     ports:
       - "3000:3000"
 
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_storage:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server --console-address ":9090" /data
+
   redis:
     restart: unless-stopped
     image: redis:7.0.5-alpine
@@ -52,3 +62,4 @@ services:
 
 volumes:
   app-volume:
+  minio_storage: {}

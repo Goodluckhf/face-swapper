@@ -3,8 +3,9 @@ WORKDIR /usr/src/app
 RUN pip install --upgrade pip
 RUN apt update
 RUN apt install -y libgl1
-RUN git clone https://huggingface.co/spaces/sczhou/CodeFormer
-RUN wget -O inswapper_128.onnx https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx
-COPY ./requirements.txt .
-RUN python -m pip install -r requirements.txt
+COPY poetry.lock pyproject.toml ./
+RUN python -m pip install --no-cache-dir poetry==1.4.2 \
+    && poetry config virtualenvs.create false \
+    && poetry install --without dev,test --no-interaction --no-ansi \
+    && rm -rf $(poetry config cache-dir)/{cache,artifacts}
 COPY . .
