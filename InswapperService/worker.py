@@ -10,7 +10,6 @@ import io
 import cv2
 import numpy as np
 import time
-from asyncio import run, get_running_loop
 
 celery = Celery(__name__)
 celery.conf.broker_url = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379")
@@ -19,7 +18,7 @@ celery.conf.result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://re
 @celery.task(name="image_process")
 def process_image(source_file, target: str):
     name = f"result_{uuid.uuid4()}.png"
-    model = "./../inswapper_128.onnx"
+    model = "./../checkpoints/inswapper_128.onnx"
     source_img = Image.open(source_file)
     os.remove(source_file)
 
