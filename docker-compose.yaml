@@ -1,0 +1,54 @@
+version: "2"
+x-environment: &env
+  - CELERY_BROKER_URL=redis://redis:6379/0
+  - CELERY_RESULT_BACKEND=redis://redis:6379/0
+  - ACCESS_KEY=q3KghOkWUPJFFdM2Q2MC
+  - SECRET_KEY=BSOqGjkBKhmEtm0FkvN1Js6nwjyzenQing3AbtnG
+  - ENDPOINT=host.docker.internal:9000
+  - BUCKET=data
+
+services:
+  inswapper:
+    build:
+      context: ./InswapperService
+      dockerfile: app.dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - app-volume:/usr/src/app/
+    environment: *env
+
+  worker:
+    build:
+      context: ./InswapperService
+      dockerfile: app.dockerfile
+    command: [ "celery", "-A", "worker", "worker", "-l", "info", "--max-tasks-per-child", "1", "--autoscale=5,1", "--concurrency", "1" ]
+    environment: *env
+    depends_on:
+      - inswapper
+      - redis
+    volumes:
+      - app-volume:/usr/src/app/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    
+  api:
+    build:
+      context: ./ApiGateway
+      dockerfile: app.dockerfile
+    environment:
+      - "API=http://inswapper:8000"
+    depends_on:
+      - inswapper
+    ports:
+      - "3000:3000"
+
+  redis:
+    restart: unless-stopped
+    image: redis:7.0.5-alpine
+    expose:
+      - 6379
+
+volumes:
+  app-volume:
