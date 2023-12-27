@@ -14,6 +14,7 @@ import numpy as np
 from PIL import Image
 from typing import List, Union, Dict, Set, Tuple
 from exceptions import FaceNotFoundException
+from .restoration import *
 
 def getFaceSwapModel(model_path: str):
     model = insightface.model_zoo.get_model(model_path)
@@ -65,21 +66,10 @@ def process(source_img: Union[Image.Image, List],
             target_img: Image.Image,
             source_indexes: str,
             target_indexes: str,
-            model: str):
-    # load machine default available providers
-    providers = onnxruntime.get_available_providers()
-
-    # load face_analyser
-    face_analyser = getFaceAnalyser(model, providers)
+            models):
     
-    # load face_swapper
-    model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), model)
-    face_swapper = getFaceSwapModel(model_path)
-    
-    # read target image
+    face_swapper, face_analyser = models
     target_img = cv2.cvtColor(np.array(target_img), cv2.COLOR_RGB2BGR)
-    
-    # detect faces that will be replaced in the target image
     target_faces = get_many_faces(face_analyser, target_img)
     num_target_faces = len(target_faces)
     num_source_images = len(source_img)
