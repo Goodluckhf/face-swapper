@@ -9,11 +9,11 @@ from exceptions import TargetException
 class ObjectStorage:
 
 
-    __bucket = 'data'
+    __bucket = os.environ.get('BUCKET')
     __client = Minio(
-        endpoint='localhost:9000',
-        access_key='5pz1poMMQE8KAHUQqqP2',
-        secret_key='Z4y5NloxPHvwpofL4AD5H5lGNei8SgZHckZzQvLH',
+        endpoint=os.environ.get('ENDPOINT'),
+        access_key=os.environ.get('ACCESS_KEY'),
+        secret_key=os.environ.get('SECRET_KEY'),
         secure=False
     )
 
