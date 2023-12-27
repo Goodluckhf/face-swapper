@@ -42,13 +42,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential
 
 # Install python3
+# compile python from source - avoid unsupported library problems
+RUN apt-get install -y checkinstall  libreadline-gplv2-dev  libncursesw5-dev   libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev && \
+    cd /usr/src && \
+    sudo wget https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz && \
+    sudo tar xzf Python-3.10.0.tgz && \
+    cd Python-3.10.0 && \
+    sudo ./configure --enable-optimizations && \
+    sudo make install
+
 RUN apt-get install -y --no-install-recommends \
-      python3 \
       python3-pip \
       python3-dev \
-      python3-wheel &&\
-    cd /usr/local/bin &&\
-    ln -s /usr/bin/python3 python &&\
+      python3-wheel && \
+    cd /usr/local/bin && \
+    ln -s /usr/bin/python3 python && \
     ln -s /usr/bin/pip3 pip;
 
 # Install TensorRT
@@ -84,7 +92,7 @@ ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${TRT_OSSPATH}/build/out:${TRT_LIBPATH}"
 WORKDIR /usr/src/app
 
 COPY poetry.lock pyproject.toml ./
-RUN python -m pip install --no-cache-dir poetry==1.4.2 \
+RUN python3 -m pip install --no-cache-dir poetry==1.4.2 \
     && poetry config virtualenvs.create false \
     && poetry install --without dev,test --no-interaction --no-ansi \
     && rm -rf $(poetry config cache-dir)/{cache,artifacts}
