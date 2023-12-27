@@ -22,8 +22,15 @@ services:
   worker:
     build:
       context: ./InswapperService
-      dockerfile: app.dockerfile
+      dockerfile: worker.dockerfile
     command: [ "celery", "-A", "worker", "worker", "-l", "info", "--max-tasks-per-child", "1", "--autoscale=5,1", "--concurrency", "1" ]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     environment: *env
     depends_on:
       - inswapper
