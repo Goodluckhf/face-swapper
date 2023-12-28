@@ -57,14 +57,13 @@ def set_realesrgan():
     return upsampler
 
 
-def face_restoration(img, background_enhance, face_upsample, upscale, codeformer_fidelity, upsampler, codeformer_net, device):
+def face_restoration(img, background_enhance, face_upsample, upscale, codeformer_fidelity, face_helper, upsampler, codeformer_net, device):
     """Run a single prediction on the model"""
     try: # global try
         # take the default setting for the demo
         has_aligned = False
         only_center_face = False
         draw_box = False
-        detection_model = "retinaface_resnet50"
 
         background_enhance = background_enhance if background_enhance is not None else True
         face_upsample = face_upsample if face_upsample is not None else True
@@ -80,14 +79,6 @@ def face_restoration(img, background_enhance, face_upsample, upscale, codeformer
             background_enhance = False
             face_upsample = False
 
-        face_helper = FaceRestoreHelper(
-            upscale,
-            face_size=512,
-            crop_ratio=(1, 1),
-            det_model=detection_model,
-            save_ext="png",
-            use_parse=True,
-        )
         bg_upsampler = upsampler if background_enhance else None
         face_upsampler = upsampler if face_upsample else None
 
