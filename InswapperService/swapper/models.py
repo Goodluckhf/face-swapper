@@ -28,17 +28,10 @@ class Models(Task):
         self.checkpoint = checkpoint
         self.device = device
         self.upsampler = set_realesrgan()
-        self.codeformer_net = ARCH_REGISTRY.get("CodeFormer")(dim_embd=512, codebook_size=1024, n_head=8, n_layers=9, connect_list=["32", "64", "128", "256"]).to(self.device)
+        self.codeformer_net = ARCH_REGISTRY.get("CodeFormer")(dim_embd=512, codebook_size=1024, n_head=8, n_layers=9, connect_list=["32", "64", "128", "256"])
+        self.codeformer_net.to(self.device)
         self.codeformer_net.load_state_dict(self.checkpoint)
         self.codeformer_net.eval()
-        self.face_helper = FaceRestoreHelper(
-            2,
-            face_size=512,
-            crop_ratio=(1, 1),
-            det_model="retinaface_resnet50",
-            save_ext="png",
-            use_parse=True,
-        )
 
     @property
     def models(self):

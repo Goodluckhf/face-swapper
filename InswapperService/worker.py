@@ -39,7 +39,16 @@ def process_image(self, source_file, target: str):
     startScale = timer()
 
     result_image = cv2.cvtColor(np.array(result_image), cv2.COLOR_RGB2BGR)
-    result_image = face_restoration(result_image, False, False, False, 0.5, self.face_helper, self.upsampler, self.codeformer_net, self.device)
+    face_helper = FaceRestoreHelper(
+        2,
+        face_size=512,
+        crop_ratio=(1, 1),
+        det_model="retinaface_resnet50",
+        save_ext="png",
+        use_parse=True,
+    )
+    print("end FaceRestoreHelper: ", timer() - startScale)
+    result_image = face_restoration(result_image, False, False, False, 0.5, face_helper, self.upsampler, self.codeformer_net, self.device)
     result_image = Image.fromarray(result_image)
     img_bytes = io.BytesIO()
     result_image.save(img_bytes, format='PNG')
