@@ -4,8 +4,6 @@ import os
 import torch
 from torchvision.transforms.functional import normalize
 
-from facelib.detection import init_detection_model
-from facelib.parsing import init_parsing_model
 from facelib.utils.misc import img2tensor, imwrite, is_gray, bgr2gray
 
 
@@ -50,14 +48,16 @@ class FaceRestoreHelper(object):
 
     def __init__(self,
                  upscale_factor,
+                 face_det,
+                 face_parse,
                  face_size=512,
                  crop_ratio=(1, 1),
-                 det_model='retinaface_resnet50',
                  save_ext='png',
                  template_3points=False,
                  pad_blur=False,
                  use_parse=False,
-                 device=None):
+                 device=None,
+                 ):
         self.template_3points = template_3points  # improve robustness
         self.upscale_factor = int(upscale_factor)
         # the cropped face ratio based on the square face
@@ -102,11 +102,11 @@ class FaceRestoreHelper(object):
             self.device = device
 
         # init face detection model
-        self.face_det = init_detection_model(det_model, half=False, device=self.device)
+        self.face_det = face_det
 
         # init face parsing model
         self.use_parse = use_parse
-        self.face_parse = init_parsing_model(model_name='parsenet', device=self.device)
+        self.face_parse = face_parse
 
     def set_upscale_factor(self, upscale_factor):
         self.upscale_factor = upscale_factor

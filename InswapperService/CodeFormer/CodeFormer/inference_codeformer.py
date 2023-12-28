@@ -99,14 +99,8 @@ if __name__ == '__main__':
     else:
         print(f'Background upsampling: False, Face upsampling: {args.face_upsample}')
 
-    face_helper = FaceRestoreHelper(
-        args.upscale,
-        face_size=512,
-        crop_ratio=(1, 1),
-        det_model = args.detection_model,
-        save_ext='png',
-        use_parse=True,
-        device=device)
+    face_helper = FaceRestoreHelper(args.upscale, face_size=512, crop_ratio=(1, 1), save_ext='png', use_parse=True,
+                                    device=device)
 
     # -------------------- start to processing ---------------------
     # scan all the jpg and png images
