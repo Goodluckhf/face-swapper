@@ -31,17 +31,12 @@ def process_image(self, source_file, target: str):
     target_response.release_conn()
 
     result_image = process([source_img], target_img, '0', '-1', self.models)
-    check_ckpts()
     upsampler = set_realesrgan()
-    device = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
-    codeformer_net = ARCH_REGISTRY.get("CodeFormer")(dim_embd=512, codebook_size=1024, n_head=8, n_layers=9, connect_list=["32", "64", "128", "256"]).to(device)
-    ckpt_path = "CodeFormer/CodeFormer/weights/CodeFormer/codeformer.pth"
-    checkpoint = torch.load(ckpt_path)["params_ema"]
-    codeformer_net.load_state_dict(checkpoint)
+    codeformer_net = ARCH_REGISTRY.get("CodeFormer")(dim_embd=512, codebook_size=1024, n_head=8, n_layers=9, connect_list=["32", "64", "128", "256"]).to(self.device)
+    codeformer_net.load_state_dict(self.checkpoint)
     codeformer_net.eval()
-    
     result_image = cv2.cvtColor(np.array(result_image), cv2.COLOR_RGB2BGR)
-    result_image = face_restoration(result_image, True, True, True, 0.5, upsampler, codeformer_net, device)
+    result_image = face_restoration(result_image, True, True, True, 0.5, upsampler, codeformer_net, self.device)
     result_image = Image.fromarray(result_image)
     img_bytes = io.BytesIO()
     result_image.save(img_bytes, format='PNG')
