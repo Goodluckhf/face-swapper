@@ -120,8 +120,6 @@ def face_restoration(img, background_enhance, face_upsample, upscale, codeformer
                         cropped_face_t, w=codeformer_fidelity, adain=True
                     )[0]
                     restored_face = tensor2img(output, rgb2bgr=True, min_max=(-1, 1))
-                del output
-                torch.cuda.empty_cache()
             except RuntimeError as error:
                 print(f"Failed inference for CodeFormer: {error}")
                 restored_face = tensor2img(
