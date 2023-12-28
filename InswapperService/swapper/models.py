@@ -1,6 +1,7 @@
 from celery import Celery, Task, signals
 from .restoration import *
-from facelib.utils.face_restoration_helper import FaceRestoreHelper
+from facelib.detection import init_detection_model
+from facelib.parsing import init_parsing_model
 import insightface
 import onnxruntime
 
@@ -32,6 +33,8 @@ class Models(Task):
         self.codeformer_net.to(self.device)
         self.codeformer_net.load_state_dict(self.checkpoint)
         self.codeformer_net.eval()
+        self.face_det = init_detection_model('retinaface_resnet50', half=True, device=self.device)
+        self.face_parse = init_parsing_model(model_name='parsenet', device=self.device)
 
     @property
     def models(self):
