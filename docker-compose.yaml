@@ -9,21 +9,24 @@ x-environment: &env
 
 services:
   inswapper:
+    image: just1ce/inswapper-py-api:1.0.0
     build:
       context: ./InswapperService
       dockerfile: app.dockerfile
-    command: uvicorn main:app --host 0.0.0.0 --reload
+    command: uvicorn main:app --host 0.0.0.0
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
-      - app-volume:/usr/src/app/
+      - tmp-images-volume:/usr/src/app/tmp/
     environment: *env
 
   worker:
+    image: just1ce/inswapper-py-worker:1.0.0
     build:
       context: ./InswapperService
       dockerfile: worker.dockerfile
-    command: [ "celery", "-A", "worker", "worker", "-l", "info", "--max-tasks-per-child", "1", "--autoscale=5,1", "--concurrency", "1" ]
+    command: [ "celery", "-A", "worker", "worker", "-l", "info", "--max-tasks-per-child", "1", "--autoscale=5,1", "--concurrency", "1", "--pool=solo" ]
     deploy:
       resources:
         reservations:
@@ -32,14 +35,16 @@ services:
               count: 1
               capabilities: [gpu]
     environment: *env
+    restart: unless-stopped
     depends_on:
       - inswapper
       - redis
     volumes:
-      - app-volume:/usr/src/app/
+      - tmp-images-volume:/usr/src/app/tmp/
 
     
   api:
+    image: just1ce/inswapper-api-gateway:1.0.0
     build:
       context: ./ApiGateway
       dockerfile: app.dockerfile
@@ -47,15 +52,17 @@ services:
       - "API=http://inswapper:8000"
     depends_on:
       - inswapper
+    restart: unless-stopped
     ports:
       - "3000:3000"
 
   minio:
     image: minio/minio
     ports:
-      - "9000:9000"
+      - "9090:9090"
     volumes:
       - minio_storage:/data
+    restart: unless-stopped
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -64,9 +71,12 @@ services:
   redis:
     restart: unless-stopped
     image: redis:7.0.5-alpine
+    volumes:
+      - redis-volume:/data
     expose:
       - 6379
 
 volumes:
-  app-volume:
+  tmp-images-volume:
+  redis-volume:
   minio_storage: {}
