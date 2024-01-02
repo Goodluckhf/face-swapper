@@ -15,8 +15,6 @@ services:
       dockerfile: app.dockerfile
     command: uvicorn main:app --host 0.0.0.0
     restart: unless-stopped
-    ports:
-      - "8000:8000"
     volumes:
       - tmp-images-volume:/usr/src/app/tmp/
     environment: *env
@@ -54,13 +52,38 @@ services:
     depends_on:
       - inswapper
     restart: unless-stopped
+
+  cdn:
+    image: nginxinc/nginx-s3-gateway:latest-20231222
+    restart: unless-stopped
+    environment:
+      ALLOW_DIRECTORY_LIST: "false"
+      AWS_SIGS_VERSION: 2
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET_NAME: data
+      S3_REGION: us-east-1
+      S3_SERVER_PORT: 9000
+      S3_SERVER_PROTO: http
+      S3_SERVER: minio
+      S3_STYLE: path
+      PROXY_CACHE_MAX_SIZE: 1g
+
+  reverse-proxy:
+    image: just1ce/inswapper-reverse-proxy:1.0.0
+    build:
+      context: ./reverse-proxy-nginx
+      dockerfile: ./dockerfile
     ports:
-      - "3000:3000"
+      - 80:80
+      - 443:443
+    restart: unless-stopped
+
 
   minio:
     image: minio/minio
     ports:
-      - "9090:9090"
+      - 127.0.0.1:9090:9090
     volumes:
       - minio_storage:/data
     restart: unless-stopped

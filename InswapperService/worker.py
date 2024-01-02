@@ -57,6 +57,6 @@ def process_image(self, source_file, target: str):
     endScale = timer()
     print("end scale: ",  endScale - startScale)
 
-    name = f"result_{uuid.uuid4()}.png"
+    name = f"face-swap/results/result_{uuid.uuid4()}.png"
     ObjectStorage.save_file(name, img_bytes)
-    return
+    return name
