@@ -34,8 +34,6 @@ services:
               capabilities: [gpu]
     environment: *env
     restart: unless-stopped
-    depends_on:
-      - inswapper
       - redis
     volumes:
       - ./InswapperService:/usr/src/app
@@ -49,8 +47,6 @@ services:
       dockerfile: app.dockerfile
     environment:
       - "API=http://inswapper:8000"
-    depends_on:
-      - inswapper
     restart: unless-stopped
 
   cdn:
