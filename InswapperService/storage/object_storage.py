@@ -8,7 +8,6 @@ from exceptions import TargetException
 
 class ObjectStorage:
 
-
     __bucket = os.environ.get('BUCKET')
     __client = Minio(
         endpoint=os.environ.get('ENDPOINT'),
@@ -22,15 +21,8 @@ class ObjectStorage:
         return ObjectStorage.__client.put_object(ObjectStorage.__bucket, name, bytes, len(bytes.getvalue()))
 
     @staticmethod
-    def get_file_url(name: str):
-        return ObjectStorage.__client.presigned_get_object(
-            ObjectStorage.__bucket,
-            name,
-            expires=timedelta(hours=2)
-        )
-
-    @staticmethod
     def get_file(name: str):
+        print(name)
         return ObjectStorage.__client.get_object(
             ObjectStorage.__bucket,
             name

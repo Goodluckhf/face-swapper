@@ -39,14 +39,21 @@ services:
       - ./InswapperService:/usr/src/app
       - tmp-images-volume:/usr/src/app/tmp/
 
-    
   api:
     image: just1ce/inswapper-api-gateway:1.0.0
     build:
       context: ./ApiGateway
       dockerfile: app.dockerfile
     environment:
-      - "API=http://inswapper:8000"
+      - API=http://inswapper:8000
+      - MINI_APP_ID=123123
+      - VK_SECRET_KEY=ktzU6P8Vbjmgq5Xy9zyX
+      - MONGO=mongodb://root:example@mongo:27017/
+      - ACCESS_KEY=minioadmin
+      - SECRET_KEY=minioadmin
+      - ENDPOINT=minio
+      - PORT=9000
+      - BUCKET=data
     restart: unless-stopped
 
   cdn:
@@ -75,7 +82,6 @@ services:
       - 443:443
     restart: unless-stopped
 
-
   minio:
     image: minio/minio
     ports:
@@ -96,7 +102,17 @@ services:
     expose:
       - 6379
 
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo_storage:/data
+
 volumes:
   tmp-images-volume:
   redis-volume:
   minio_storage: {}
+  mongo_storage:
