@@ -48,6 +48,7 @@ def process_image(self, source_file, target: str):
         save_ext="png",
         use_parse=True,
     )
+
     print("end FaceRestoreHelper: ", timer() - startScale)
     result_image = face_restoration(result_image, True, True, True, 0.5, face_helper, self.upsampler, self.codeformer_net, self.device)
     result_image = Image.fromarray(result_image)
@@ -56,7 +57,6 @@ def process_image(self, source_file, target: str):
     img_bytes.seek(0)
     endScale = timer()
     print("end scale: ",  endScale - startScale)
-
     name = f"face-swap/results/result_{uuid.uuid4()}.png"
     ObjectStorage.save_file(name, img_bytes)
     return name
