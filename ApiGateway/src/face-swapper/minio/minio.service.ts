@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -12,17 +13,18 @@ export class MinioService {
 
     constructor(
         @InjectModel(Directory.name) private DirectoryModel: Model<Directory>,
-        @Inject(MINIO_CONNECTION) private readonly minioClient: Client
+        @Inject(MINIO_CONNECTION) private readonly minioClient: Client,
+        private readonly configService: ConfigService
     ) {}
     
     async getFile(path: string){
-        return await this.minioClient.getObject('data', path)
+        return await this.minioClient.getObject(this.configService.get('BUCKET'), path)
     }
 
     async getFiles(): Promise<File[]>{
         return new Promise((resolve,reject) => {
             const objectsListTemp: File[] = [];
-            const stream = this.minioClient.listObjectsV2('data', '', true);
+            const stream = this.minioClient.listObjectsV2(this.configService.get('BUCKET'), '', true);
 
             stream.on('data', obj => {
                 return objectsListTemp.push({
