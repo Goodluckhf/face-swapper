@@ -3,7 +3,7 @@ import { VkService } from './vk.service';
 import { VkAuthGuard } from 'src/guards/vk-auth/vk-auth.guard';
 import UploadDto from './dtos/Upload.dto';
 
-@Controller('vk')
+@Controller('api/vk')
 export class VkController {
 
     constructor(private readonly vkService: VkService){}
