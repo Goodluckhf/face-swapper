@@ -21,7 +21,7 @@ import { VkModule } from './vk/vk.module';
           isGlobal: true,
           useSSL: false,
           endPoint: configService.get('ENDPOINT'),
-          port: configService.get('PORT'),
+          port: parseInt(configService.get('PORT'), 10),
           accessKey: configService.get('ACCESS_KEY'),
           secretKey: configService.get('SECRET_KEY'),
         }),

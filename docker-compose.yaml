@@ -34,7 +34,6 @@ services:
               capabilities: [gpu]
     environment: *env
     restart: unless-stopped
-      - redis
     volumes:
       - ./InswapperService:/usr/src/app
       - tmp-images-volume:/usr/src/app/tmp/
