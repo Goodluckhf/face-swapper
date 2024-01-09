@@ -28,23 +28,6 @@ export class FaceSwapperService implements OnModuleInit {
     private readonly userService: UsersService,
   ) {}
 
-  async onModuleInit() {
-    await this.ConfigModel.findOneAndUpdate(
-      {},
-      {
-        $setOnInsert: {
-          groupids: [189770961, 189770962, 189770963],
-          textcaption: 'askdmasdkmasldkasmldkasd',
-          textphoto: 'asdkmasldkasmdlaksasdasdasdsad',
-        },
-      },
-      {
-        returnOriginal: false,
-        upsert: true,
-      },
-    );
-  }
-
   async swapFace(
     id: string,
     file: Express.Multer.File,
