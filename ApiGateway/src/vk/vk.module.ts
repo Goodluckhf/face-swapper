@@ -6,6 +6,6 @@ import { HttpModule } from '@nestjs/axios';
 @Module({
   imports: [HttpModule],
   providers: [VkService],
-  controllers: [VkController]
+  controllers: [VkController],
 })
 export class VkModule {}

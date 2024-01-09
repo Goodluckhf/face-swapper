@@ -53,6 +53,7 @@ services:
       - ENDPOINT=minio
       - PORT=9000
       - BUCKET=data
+      - PREFIX=images
     restart: unless-stopped
 
 volumes:

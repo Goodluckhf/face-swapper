@@ -5,15 +5,14 @@ export type ConfigDocument = HydratedDocument<Config>;
 
 @Schema()
 export class Config {
-    
-    @Prop()
-    groupids: number[]
+  @Prop()
+  groupids: number[];
 
-    @Prop()
-    textcaption: string;
+  @Prop()
+  textcaption: string;
 
-    @Prop()
-    textphoto: string
+  @Prop()
+  textphoto: string;
 }
 
 export const ConfigSchema = SchemaFactory.createForClass(Config);
