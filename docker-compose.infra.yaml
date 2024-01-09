@@ -20,6 +20,11 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     command: server --console-address ":9090" /data
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 0.0.0.0:24224
+        tag: default.minio
   cdn:
     image: nginxinc/nginx-s3-gateway:latest-20231222
     networks:
@@ -37,6 +42,11 @@ services:
       S3_SERVER: minio
       S3_STYLE: path
       PROXY_CACHE_MAX_SIZE: 1g
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 0.0.0.0:24224
+        tag: default.cdn
   reverse-proxy:
     image: just1ce/inswapper-reverse-proxy:1.0.0
     networks:
@@ -51,6 +61,11 @@ services:
       - 80:80
       - 443:443
     restart: unless-stopped
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 0.0.0.0:24224
+        tag: default.reverse-proxy
 
   redis:
     restart: unless-stopped
@@ -61,6 +76,11 @@ services:
       - redis-volume:/data
     expose:
       - 6379
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 0.0.0.0:24224
+        tag: default.redis
 
   mongo:
     image: mongo
@@ -74,6 +94,11 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: example
     volumes:
       - mongo_storage:/data
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 0.0.0.0:24224
+        tag: default.mongo
   certbot:
     image: certbot/certbot:latest
     volumes:
