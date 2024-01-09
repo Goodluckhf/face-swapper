@@ -1,8 +1,16 @@
 version: "2"
 
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '5m'
+    max-file: '1'
+
 services:
   minio:
     image: minio/minio
+    networks:
+      - app-net
     ports:
       - 127.0.0.1:9090:9090
     volumes:
@@ -14,6 +22,8 @@ services:
     command: server --console-address ":9090" /data
   cdn:
     image: nginxinc/nginx-s3-gateway:latest-20231222
+    networks:
+      - app-net
     restart: unless-stopped
     environment:
       ALLOW_DIRECTORY_LIST: "false"
@@ -29,6 +39,8 @@ services:
       PROXY_CACHE_MAX_SIZE: 1g
   reverse-proxy:
     image: just1ce/inswapper-reverse-proxy:1.0.0
+    networks:
+      - app-net
     volumes:
       - ./certbot/www:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
@@ -42,6 +54,8 @@ services:
 
   redis:
     restart: unless-stopped
+    networks:
+      - app-net
     image: redis:7.0.5-alpine
     volumes:
       - redis-volume:/data
@@ -51,6 +65,8 @@ services:
   mongo:
     image: mongo
     restart: always
+    networks:
+      - app-net
     ports:
       - 127.0.0.1:27017:27017
     environment:
@@ -63,8 +79,138 @@ services:
     volumes:
       - ./certbot/www/:/var/www/certbot/:rw
       - ./certbot/conf/:/etc/letsencrypt/:rw
+  process-exporter:
+    image: ncabatoff/process-exporter
+    container_name: process-exporter
+    privileged: true
+    restart: always
+    networks:
+      - app-net
+    volumes:
+      - /proc:/host/proc
+      - ./process-exporter:/config
+    command: --procfs /host/proc -config.path /config/all.yml --web.listen-address=:9256
+    logging: *default-logging
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:v0.15.2
+    restart: always
+    command: --path.procfs /host/proc --path.sysfs /host/sys --collector.filesystem.ignored-mount-points "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns)($$|/)"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    logging: *default-logging
+    networks:
+      - app-net
+  prometheus:
+    image: just1ce/inswapper-prometheus:1.0.0
+    container_name: prometheus
+    networks:
+      - app-net
+    build:
+      context: ./prometheus
+      dockerfile: ./Dockerfile
+    volumes:
+      - prometheus-data:/prometheus
+    restart: always
+    logging: *default-logging
+  nginx-exporter:
+    container_name: nginx-exporter
+    image: sophos/nginx-vts-exporter
+    restart: always
+    logging: *default-logging
+    networks:
+      - app-net
+    env_file:
+      - .env.infra
+  mongodb-exporter:
+    container_name: mongodb-exporter
+    image: amazonaws/mongodb_exporter
+    restart: always
+    env_file:
+      - .env.infra
+    networks:
+      - app-net
+    logging: *default-logging
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.46.0
+    restart: always
+    logging: *default-logging
+    networks:
+      - app-net
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+  grafana:
+    container_name: grafana
+    restart: always
+    image: grafana/grafana:5.3.2
+    networks:
+      - app-net
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana-data:/var/lib/grafana
+    logging: *default-logging
+    env_file:
+      - .env.infra
+  fluentd:
+    image: just1ce/inswapper-fluentd:v0.1.0
+    build:
+      context: ./fluentd
+      dockerfile: ./Dockerfile
+    ports:
+      - 127.0.0.1:24224:24224
+      - 127.0.0.1:24224:24224/udp
+    logging: *default-logging
+    networks:
+      - app-net
+  elasticsearch:
+    image: elasticsearch:7.17.16
+    container_name: elasticsearch
+    environment:
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - "discovery.type=single-node"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data
+    networks:
+      - app-net
+    logging: *default-logging
+  kibana-nginx:
+    image: nginx
+    depends_on:
+      - kibana
+    networks:
+      - app-net
+    volumes:
+      - ./.htpasswd:/etc/nginx/.htpasswd
+      - ./kibana/kibana-nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 5601:5601
+    logging: *default-logging
+  kibana:
+    image: kibana:7.17.16
+    logging: *default-logging
+    networks:
+      - app-net
 
 volumes:
   redis-volume:
   minio_storage:
   mongo_storage:
+  prometheus-data:
+  grafana-data:
+  elastic-data:
+
+
+networks:
+  app-net:
+    external: true
