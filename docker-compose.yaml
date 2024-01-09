@@ -69,7 +69,7 @@ services:
       - ENDPOINT=minio
       - PORT=9000
       - BUCKET=data
-      - PREFIX=images
+      - PREFIX=base-images
     restart: unless-stopped
     logging:
       driver: 'fluentd'
