@@ -1,9 +1,9 @@
-import { IsString } from "class-validator"
+import { IsString } from 'class-validator';
 
 export default class UploadDto {
-    @IsString()
-    photo: string   
+  @IsString()
+  photo: string;
 
-    @IsString()
-    uploadUrl: string
+  @IsString()
+  uploadUrl: string;
 }

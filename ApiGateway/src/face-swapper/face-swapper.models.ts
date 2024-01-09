@@ -8,9 +8,9 @@ export interface JobResult {
 }
 
 export interface Result {
-  groupids: number[],
-  gr: string,
-  result: string,
-  textphoto: string,
-  textcaption: string
+  groupids: number[];
+  gr: string;
+  result: string;
+  textphoto: string;
+  textcaption: string;
 }

@@ -17,7 +17,7 @@ import { FaceSwapperService } from './face-swapper.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MinioService } from './minio/minio.service';
 import { UsersService } from './users/users.service';
-import { VkAuthGuard } from 'src/guards/vk-auth/vk-auth.guard';
+import { VkAuthGuard } from '../guards/vk-auth/vk-auth.guard';
 import { Response } from 'express';
 
 @Controller('api/face-swapper')
@@ -29,12 +29,12 @@ export class FaceSwapperController {
   ) {}
 
   @Get('image')
-  async getImage(@Res() res: Response, @Query('path') path: string){
-    const stream = await this.minioService.getFile(path) as any
+  async getImage(@Res() res: Response, @Query('path') path: string) {
+    const stream = (await this.minioService.getFile(path)) as any;
     res.setHeader('Content-Type', stream.headers['content-type']);
     stream.pipe(res);
   }
-  
+
   @UseGuards(VkAuthGuard)
   @UsePipes(ValidationPipe)
   @UseInterceptors(FileInterceptor('source'))
@@ -55,19 +55,19 @@ export class FaceSwapperController {
 
   @UseGuards(VkAuthGuard)
   @Get('base-images')
-  async getImages(@Query('sex') sex: string = 'male'){
-    return await this.minioService.getCategories(sex)
+  async getImages(@Query('sex') sex: string = 'male') {
+    return await this.minioService.getCategories(sex);
   }
 
   @UseGuards(VkAuthGuard)
   @Get('limits/:id')
-  async getLimit(@Param('id') id: string){
-      return this.usersService.getLimit(id)
+  async getLimit(@Param('id') id: string) {
+    return this.usersService.getLimit(id);
   }
 
   @UseGuards(VkAuthGuard)
   @Put('limits/:id')
-  async setUser(@Param('id') id: string){
-      return this.usersService.setUser(id)
+  async setUser(@Param('id') id: string) {
+    return this.usersService.setUser(id);
   }
 }
