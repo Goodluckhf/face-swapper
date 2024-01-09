@@ -10,6 +10,8 @@ x-environment: &env
 services:
   inswapper:
     image: just1ce/inswapper-py-api:1.0.0
+    networks:
+      - app-net
     build:
       context: ./InswapperService
       dockerfile: app.dockerfile
@@ -21,6 +23,8 @@ services:
 
   worker:
     image: just1ce/inswapper-py-worker:1.0.0
+    networks:
+      - app-net
     build:
       context: ./InswapperService
       dockerfile: worker.dockerfile
@@ -40,6 +44,8 @@ services:
 
   api:
     image: just1ce/inswapper-api-gateway:1.0.0
+    networks:
+      - app-net
     build:
       context: ./ApiGateway
       dockerfile: app.dockerfile
@@ -58,4 +64,8 @@ services:
 
 volumes:
   tmp-images-volume:
+
+networks:
+  app-net:
+    external: true
 
