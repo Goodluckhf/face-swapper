@@ -4,9 +4,9 @@ import { disconnect } from 'mongoose';
 
 let mongod: MongoMemoryServer;
 
-export const rootMongooseTestModule = (options: MongooseModuleOptions = {}) =>{
+export const rootMongooseTestModule = (options: MongooseModuleOptions = {}) => {
   return MongooseModule.forRootAsync({
-      useFactory: async () => {
+    useFactory: async () => {
       mongod = await MongoMemoryServer.create();
       const mongoUri = mongod.getUri();
       return {
@@ -15,7 +15,7 @@ export const rootMongooseTestModule = (options: MongooseModuleOptions = {}) =>{
       };
     },
   });
-}
+};
 
 export const closeInMongodConnection = async () => {
   await disconnect();

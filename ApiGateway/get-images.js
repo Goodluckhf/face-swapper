@@ -12858,7 +12858,9 @@ const downloadImages = async () => {
           const dirPath = `${dirToWrite}/${basePath}/${category.path}/male`;
           await mkDirAsync(dirPath, { recursive: true });
           const stream = fs.createWriteStream(`${dirPath}/${photoName}`);
-          const fetchUrl = hasSlash ? `${photo.name}` : `${category.path}/${photo.name}`;
+          const fetchUrl = hasSlash
+            ? `${photo.name}`
+            : `${category.path}/${photo.name}`;
           const { body } = await fetch(
             `https://xx10.ru/photo/images/M/${fetchUrl}`,
           );
@@ -12883,7 +12885,9 @@ const downloadImages = async () => {
           const dirPath = `${dirToWrite}/${basePath}/${category.path}/female`;
           await mkDirAsync(dirPath, { recursive: true });
           const stream = fs.createWriteStream(`${dirPath}/${photoName}`);
-          const fetchUrl = hasSlash ? `${photo.name}` : `${category.path}/${photo.name}`;
+          const fetchUrl = hasSlash
+            ? `${photo.name}`
+            : `${category.path}/${photo.name}`;
           const { body } = await fetch(
             `https://xx10.ru/photo/images/W/${fetchUrl}`,
           );

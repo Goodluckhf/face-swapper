@@ -4,11 +4,9 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  OnModuleDestroy,
-  OnModuleInit,
 } from '@nestjs/common';
-import { JobResult, JobStatus, Result } from './face-swapper.models';
-import { NotFoundError, catchError, firstValueFrom } from 'rxjs';
+import { JobResult, Result } from './face-swapper.models';
+import { catchError, firstValueFrom } from 'rxjs';
 import { Blob } from 'buffer';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
@@ -19,7 +17,7 @@ import { UsersService } from './users/users.service';
 import { randomUUID } from 'crypto';
 
 @Injectable()
-export class FaceSwapperService implements OnModuleInit {
+export class FaceSwapperService {
   constructor(
     @InjectModel(Image.name) private ImageModel: Model<Image>,
     @InjectModel(Config.name) private ConfigModel: Model<Config>,
@@ -33,7 +31,6 @@ export class FaceSwapperService implements OnModuleInit {
     file: Express.Multer.File,
     target: string,
   ): Promise<Pick<JobResult, 'id'>> {
-
     const { limit } = await this.userService.getLimit(id);
 
     if (limit <= 0) {

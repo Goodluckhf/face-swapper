@@ -27,7 +27,9 @@ export class MinioService {
     return new Promise((resolve, reject) => {
       const objectsListTemp: File[] = [];
       const stream = this.minioClient.listObjectsV2(
-        this.configService.get('BUCKET'), this.configService.get('PREFIX'), true,
+        this.configService.get('BUCKET'),
+        this.configService.get('PREFIX'),
+        true,
       );
 
       stream.on('data', (obj) => {

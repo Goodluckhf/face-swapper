@@ -24,9 +24,9 @@ export class UsersService {
       {
         returnOriginal: false,
         upsert: true,
-        populate: ['images']
+        populate: ['images'],
       },
-    )
+    );
   }
 
   async getLimit(id: string): Promise<Limit> {
@@ -60,8 +60,8 @@ export class UsersService {
         lastSubscription: new Date(),
       },
       {
-        upsert: true
-      }
+        upsert: true,
+      },
     );
   }
 

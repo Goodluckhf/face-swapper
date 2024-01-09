@@ -5,7 +5,10 @@ import { Model } from 'mongoose';
 import { User, UserSchema } from '../src/Schemas/User.schema';
 import { UsersService } from '../src/face-swapper/users/users.service';
 import { Config, ConfigSchema } from '../src/Schemas/Config.schema';
-import { closeInMongodConnection, rootMongooseTestModule } from './MongooseTestModule';
+import {
+  closeInMongodConnection,
+  rootMongooseTestModule,
+} from './MongooseTestModule';
 import { ImageSchema, Image } from '../src/Schemas/Image.schema';
 import { FaceSwapperController } from '../src/face-swapper/face-swapper.controller';
 import { CanActivate, Injectable } from '@nestjs/common';
@@ -16,28 +19,27 @@ import { ConfigModule } from '@nestjs/config';
 import { Directory, DirectorySchema } from '../src/Schemas/Directory.schema';
 import { Readable } from 'stream';
 import { JobResult } from 'src/face-swapper/face-swapper.models';
-import { from} from 'rxjs';
+import { from } from 'rxjs';
 
 @Injectable()
 export class MockGuard implements CanActivate {
   constructor() {}
   canActivate() {
-    return true
+    return true;
   }
 }
 
 @Injectable()
-export class MockMinio{
-}
+export class MockMinio {}
 
 describe('FaceSwapperController (e2e)', () => {
   const id = '1';
-  const taskId: string = '123'
+  const taskId: string = '123';
   let usersService: UsersService;
-  let faceSwapperController: FaceSwapperController
-  let httpService: HttpService
-  let minioService: MinioService
-  let configModel: Model<Config>
+  let faceSwapperController: FaceSwapperController;
+  let httpService: HttpService;
+  let minioService: MinioService;
+  let configModel: Model<Config>;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -55,30 +57,32 @@ describe('FaceSwapperController (e2e)', () => {
       controllers: [FaceSwapperController],
       providers: [UsersService, FaceSwapperService, MinioService, VkAuthGuard],
     })
-    .overrideGuard(VkAuthGuard).useValue(MockGuard)
-    .overrideProvider(MinioService).useValue(MockMinio)
-    .compile();
-    
-    configModel = module.get<Model<Config>>(getModelToken(Config.name))
-    httpService = module.get<HttpService>(HttpService)
+      .overrideGuard(VkAuthGuard)
+      .useValue(MockGuard)
+      .overrideProvider(MinioService)
+      .useValue(MockMinio)
+      .compile();
+
+    configModel = module.get<Model<Config>>(getModelToken(Config.name));
+    httpService = module.get<HttpService>(HttpService);
     usersService = module.get<UsersService>(UsersService);
-    minioService = module.get<MinioService>(MinioService)
-    faceSwapperController = module.get<FaceSwapperController>(FaceSwapperController);
+    minioService = module.get<MinioService>(MinioService);
+    faceSwapperController = module.get<FaceSwapperController>(
+      FaceSwapperController,
+    );
 
     await configModel.create({
       groupids: [1, 2],
       textcaption: 'mockcaption',
       textphoto: 'mocktext',
     });
-
   });
 
   afterAll(async () => {
-    await closeInMongodConnection()
-  })
+    await closeInMongodConnection();
+  });
 
   describe('Users', () => {
-
     it("(GET) should return user's limit", async () => {
       const result = await faceSwapperController.getLimit(id);
 
@@ -89,8 +93,7 @@ describe('FaceSwapperController (e2e)', () => {
     });
 
     it('(PUT) should give user one more generation', async () => {
-
-      await faceSwapperController.setUser(id)
+      await faceSwapperController.setUser(id);
       const result = await faceSwapperController.getLimit(id);
 
       expect(result).toEqual({
@@ -100,8 +103,7 @@ describe('FaceSwapperController (e2e)', () => {
     });
 
     it('(PUT) should not give user generation twice', async () => {
-
-      await faceSwapperController.setUser(id)
+      await faceSwapperController.setUser(id);
       const result = await faceSwapperController.getLimit(id);
 
       expect(result).toEqual({
@@ -109,10 +111,9 @@ describe('FaceSwapperController (e2e)', () => {
         extraGenerationAvailable: false,
       });
     });
-  })
-  
-  describe('FaceSwap', () => {
+  });
 
+  describe('FaceSwap', () => {
     it('(POST) should return task id', async () => {
       const file: Express.Multer.File = {
         originalname: 'file.png',
@@ -124,60 +125,62 @@ describe('FaceSwapperController (e2e)', () => {
         encoding: 'utf-8',
         stream: new Readable(),
         destination: 'path',
-        filename: 'file.png'
-      };        
+        filename: 'file.png',
+      };
 
       const data = {
-        id: taskId
-      }
+        id: taskId,
+      };
 
       jest
         .spyOn(httpService, 'post')
-        .mockImplementationOnce(() => from([{data}]) as any);
+        .mockImplementationOnce(() => from([{ data }]) as any);
 
-      const result = await faceSwapperController.swapFace(file, id, 'man1.jpeg')
-      
-      expect(result).toEqual(data)
-    })
+      const result = await faceSwapperController.swapFace(
+        file,
+        id,
+        'man1.jpeg',
+      );
+
+      expect(result).toEqual(data);
+    });
 
     it('(GET) should return pending task result', async () => {
-
       const data: JobResult = {
         id: taskId,
         status: 'PENDING',
-      }
+      };
 
       jest
         .spyOn(httpService, 'get')
-        .mockImplementationOnce(() => from([{data}]) as any);
+        .mockImplementationOnce(() => from([{ data }]) as any);
 
-      const result = await faceSwapperController.getGeneratedImage(taskId)
-      
-      expect(result).toBe(data.status)
-    })
+      const result = await faceSwapperController.getGeneratedImage(taskId);
+
+      expect(result).toBe(data.status);
+    });
 
     it('(GET) should return success task result', async () => {
-
       const data: JobResult = {
         id: taskId,
         status: 'SUCCESS',
-        image: 'mock.png'
-      }
+        image: 'mock.png',
+      };
 
       jest
         .spyOn(httpService, 'get')
-        .mockImplementationOnce(() => from([{data}]) as any);
+        .mockImplementationOnce(() => from([{ data }]) as any);
 
-      const result = await faceSwapperController.getGeneratedImage(taskId)
+      const result = await faceSwapperController.getGeneratedImage(taskId);
 
       expect(result).toStrictEqual({
-        groupids: [1,2],
+        groupids: [1, 2],
         gr: `https://vk.com/app/${process.env.MINI_APP_ID}`,
         result: 'mock.png',
         textphoto: 'mocktext',
         textcaption: 'mockcaption',
-      })
-    })
+      });
+    });
 
     it('(GET) should decrease user limit', async () => {
       const result = await faceSwapperController.getLimit(id);
@@ -186,6 +189,6 @@ describe('FaceSwapperController (e2e)', () => {
         limit: 1,
         extraGenerationAvailable: false,
       });
-    })
-  })
+    });
+  });
 });
