@@ -69,15 +69,17 @@ def face_restoration(img, background_enhance, face_upsample, upscale, codeformer
     upscale = int(upscale) # convert type to int
     if upscale > 4: # avoid memory exceeded due to too large upscale
         upscale = 4
-    if upscale > 2 and max(img.shape[:2])>1000: # avoid memory exceeded due to too large img resolution
+    if upscale > 2 and max(img.shape[:2])>5000: # avoid memory exceeded due to too large img resolution
         upscale = 2
-    if max(img.shape[:2]) > 1500: # avoid memory exceeded due to too large img resolution
+    if max(img.shape[:2]) > 5000: # avoid memory exceeded due to too large img resolution
         upscale = 1
         background_enhance = False
         face_upsample = False
 
     bg_upsampler = upsampler if background_enhance else None
     face_upsampler = upsampler if face_upsample else None
+
+    print(f"codeformer settings: upscale: {upscale}, maxImageShape: {max(img.shape[:2])}, bg_upsampler: {bg_upsampler is not None}, face_upsample: {face_upsample and face_upsampler is not None}")
 
     if has_aligned:
         # the input faces are already cropped and aligned
@@ -93,7 +95,6 @@ def face_restoration(img, background_enhance, face_upsample, upscale, codeformer
             resize=640,
             eye_dist_threshold=5
         )
-        print('num_det_faces', num_det_faces);
         # align and warp each face
         face_helper.align_warp_face()
 
@@ -114,7 +115,7 @@ def face_restoration(img, background_enhance, face_upsample, upscale, codeformer
                 )[0]
                 restored_face = tensor2img(output, rgb2bgr=True, min_max=(-1, 1))
             endScalePredict = timer()
-            print("face scale predict end: ", endScalePredict - startScalePredict)
+            print(f"face scale predict end: {endScalePredict - startScalePredict}s")
         except RuntimeError as error:
             print(f"Failed inference for CodeFormer: {error}")
             restored_face = tensor2img(
