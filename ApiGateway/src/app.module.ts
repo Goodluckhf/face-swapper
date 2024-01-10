@@ -4,9 +4,11 @@ import { FaceSwapperModule } from './face-swapper/face-swapper.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NestMinioModule } from 'nestjs-minio';
 import { VkModule } from './vk/vk.module';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({

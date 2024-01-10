@@ -19,7 +19,9 @@ export class User {
   })
   limit: number
 
-  @Prop()
+  @Prop({
+    default: new Date()
+  })
   lastUsage: Date
   
   @Prop()

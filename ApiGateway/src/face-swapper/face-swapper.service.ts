@@ -15,6 +15,7 @@ import { Image } from '../Schemas/Image.schema';
 import { Config } from '../Schemas/Config.schema';
 import { UsersService } from './users/users.service';
 import { randomUUID } from 'crypto';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class FaceSwapperService {
@@ -24,6 +25,7 @@ export class FaceSwapperService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly userService: UsersService,
+    private readonly logger: PinoLogger,
   ) {}
 
   async swapFace(
@@ -53,6 +55,8 @@ export class FaceSwapperService {
         })
         .pipe(
           catchError((e) => {
+            this.logger.error(`Ошибка генерации`)
+            this.logger.error(e.response.data)
             throw new HttpException(e.response.data, e.response.status);
           }),
         ),
@@ -76,6 +80,9 @@ export class FaceSwapperService {
         .get<JobResult>(`${this.configService.get('API')}/${id}`)
         .pipe(
           catchError(async (e) => {
+            this.logger.error(`Ошибка генерации`)
+            this.logger.error(e.response.data)
+
             await image.deleteOne();
             await this.userService.setLimit(id, 1)
             throw new HttpException(e.response.data, e.response.status);
@@ -84,8 +91,9 @@ export class FaceSwapperService {
     );
 
     if (data.status == 'SUCCESS') {
-      const config = await this.ConfigModel.findOne();
+      this.logger.error(`Успешно сгенерировано: ${data.image}`)
 
+      const config = await this.ConfigModel.findOne();
       image.url = data.image;
       await image.save();
 
