@@ -68,6 +68,12 @@ export class FaceSwapperController {
   @UseGuards(VkAuthGuard)
   @Put('limits/:id')
   async setUser(@Param('id') id: string) {
-    return this.usersService.setUser(id);
+    return await this.usersService.setSubscription(id)
+  }
+
+  @UseGuards(VkAuthGuard)
+  @Post('limits/:id')
+  async updateLimit(@Param('id') id:string){
+    return await this.usersService.setLimit(id,1)
   }
 }

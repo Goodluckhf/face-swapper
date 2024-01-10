@@ -58,8 +58,9 @@ export class FaceSwapperService {
         ),
     );
 
-    const image = await this.ImageModel.create({ id: data.id });
-    await this.userService.saveImage(id, image);
+    await this.userService.setLimit(id, -1)
+    await this.ImageModel.create({ id: data.id, creator: id });
+    
     return data;
   }
 
@@ -76,6 +77,7 @@ export class FaceSwapperService {
         .pipe(
           catchError(async (e) => {
             await image.deleteOne();
+            await this.userService.setLimit(id, 1)
             throw new HttpException(e.response.data, e.response.status);
           }),
         ),

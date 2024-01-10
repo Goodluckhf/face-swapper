@@ -12,11 +12,8 @@ export class Image {
   @Prop()
   url: string;
 
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  })
-  creator: User;
+  @Prop()
+  creator: string;
 
   @Prop()
   createdAt: Date;
