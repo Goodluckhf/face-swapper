@@ -32,7 +32,7 @@ export class UsersService {
   
   async setSubscription(id: string): Promise<Limit> {
     const user = await this.getUser(id);
-    if(user?.lastSubscription?.getDate() !== new Date().getDate()){
+    if(user?.lastSubscription?.getDate() !== new Date().getDate() && user.limit < 2){
       user.lastSubscription = new Date()
       user.limit += 1
       await user.save()      
@@ -52,29 +52,26 @@ export class UsersService {
   async getLimit(id: string): Promise<Limit> {
 
     const user = await this.getUser(id);
-    const images = await this.todayGenerations(id);
-    const todaySubscription = user?.lastSubscription?.getDate() == new Date().getDate();
-    const extraGenerationAvailable = !todaySubscription && user.limit < 2;    
+    if(user?.lastUsage?.getDate() !== new Date().getDate() && user.limit < 2){
+      user.limit += 1
+      user.lastUsage = new Date()
+      await user.save()
+    }
 
+    const extraGenerationAvailable = user?.lastSubscription?.getDate() !== new Date().getDate() && user.limit < 2;    
+    
     if (user.limit <= 0) {
-      const lastImage = images[images.length - 1];
+      const lastImage = await this.ImageModel.find().sort({createdAt: -1}).limit(1);
       const config = await this.ConfigModel.findOne();
 
       return {
         limit: user.limit,
-        result: lastImage?.url,
+        result: lastImage[0]?.url,
         textphoto: config?.textphoto,
         textcaption: config?.textcaption,
       };
     }
 
     return { limit: user.limit, extraGenerationAvailable };
-  }
-
-  async todayGenerations(id: string): Promise<Image[]> {
-    const images = await this.ImageModel.find({id})
-    return images.filter(
-      (image) => image.createdAt.getDate() == new Date().getDate() && image.url,
-    );
   }
 }
