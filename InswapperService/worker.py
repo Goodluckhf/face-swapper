@@ -16,6 +16,8 @@ from timeit import default_timer as timer
 celery = Celery(__name__)
 celery.conf.broker_url = os.environ.get("CELERY_BROKER_URL", "redis://127.0.0.1:6379")
 celery.conf.result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379")
+celery.conf.worker_send_task_events = True
+celery.conf.task_send_sent_event = True
 
 @celery.task(bind=True, base=Models)
 def process_image(self, source_file, target: str):

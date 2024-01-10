@@ -153,9 +153,19 @@ services:
       - app-net
     env_file:
       - .env.infra
+  celery-exporter:
+    container_name: celery-exporter
+    image: danihodovic/celery-exporter
+    restart: always
+    logging: *default-logging
+    networks:
+      - app-net
+    environment:
+      - CE_BROKER_URL=redis://redis:6379/0
   mongodb-exporter:
     container_name: mongodb-exporter
     image: percona/mongodb_exporter:0.40.0
+    command: "--collect-all"
     restart: always
     env_file:
       - .env.infra
