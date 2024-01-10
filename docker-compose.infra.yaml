@@ -155,7 +155,7 @@ services:
       - .env.infra
   mongodb-exporter:
     container_name: mongodb-exporter
-    image: amazonaws/mongodb_exporter
+    image: percona/mongodb_exporter:0.40.0
     restart: always
     env_file:
       - .env.infra
