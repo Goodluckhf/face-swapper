@@ -23,5 +23,7 @@ import { VkAuthGuard } from '../guards/vk-auth/vk-auth.guard';
   ],
   controllers: [FaceSwapperController],
   providers: [FaceSwapperService, UsersService, MinioService, VkAuthGuard],
+  exports: [MinioService]
+
 })
 export class FaceSwapperModule {}
