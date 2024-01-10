@@ -162,6 +162,20 @@ services:
       - app-net
     environment:
       - CE_BROKER_URL=redis://redis:6379/0
+  nvidia-smi-exporter:
+    container_name: nvidia-smi-exporter
+    image: utkuozdemir/nvidia_gpu_exporter:1.1.0
+    restart: always
+    logging: *default-logging
+    volumes:
+      - /usr/lib/x86_64-linux-gnu/libnvidia-ml.so:/usr/lib/x86_64-linux-gnu/libnvidia-ml.so
+      - /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1:/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1
+      - /usr/bin/nvidia-smi:/usr/bin/nvidia-smi
+    devices:
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia0:/dev/nvidia0
+    networks:
+      - app-net
   mongodb-exporter:
     container_name: mongodb-exporter
     image: percona/mongodb_exporter:0.40.0

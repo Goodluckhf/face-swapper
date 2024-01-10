@@ -23,3 +23,6 @@ scrape_configs:
   - job_name: 'celery-exporter'
     static_configs:
       - targets: ['celery-exporter:9808']
+  - job_name: 'nvidia-exporter'
+    static_configs:
+      - targets: ['nvidia-smi-exporter:9835']
