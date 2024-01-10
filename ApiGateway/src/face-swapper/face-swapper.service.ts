@@ -41,11 +41,7 @@ export class FaceSwapperService {
 
     const fileName: string = `${randomUUID()}.${file.mimetype.split('/')[1]}`;
     const form = new FormData();
-    form.set(
-      'source',
-      new Blob([file.buffer], { type: file.mimetype }),
-      fileName,
-    );
+    form.set( 'source', new Blob([file.buffer], { type: file.mimetype }), fileName );
     form.set('target', target);
 
     const { data } = await firstValueFrom(
@@ -63,14 +59,12 @@ export class FaceSwapperService {
     );
 
     await this.userService.setLimit(id, -1)
-    await this.ImageModel.create({ id: data.id, creator: id });
-    
+    const image = await this.ImageModel.create({ id: data.id, creator: id });
     return data;
   }
 
   async getResult(id: string): Promise<Result | 'PENDING'> {
     const image = await this.ImageModel.findOne({ id });
-
     if (!image) {
       throw new HttpException('Image not found', HttpStatus.NOT_FOUND);
     }
@@ -82,9 +76,7 @@ export class FaceSwapperService {
           catchError(async (e) => {
             this.logger.error(`Ошибка генерации`)
             this.logger.error(e.response.data)
-
-            await image.deleteOne();
-            await this.userService.setLimit(id, 1)
+            await this.userService.setLimit(image.creator, 1)
             throw new HttpException(e.response.data, e.response.status);
           }),
         ),
