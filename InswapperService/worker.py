@@ -37,7 +37,7 @@ def process_image(self, source_file, target: str):
 
     result_image = process([source_img], target_img, '0', '-1', self.models)
     endFaceswap = timer()
-    print("face swap end: ",  endFaceswap - startFaceswap)
+    print(f"face swap end: {endFaceswap - startFaceswap}s")
     startScale = timer()
 
     result_image = cv2.cvtColor(np.array(result_image), cv2.COLOR_RGB2BGR)
@@ -51,14 +51,13 @@ def process_image(self, source_file, target: str):
         use_parse=True,
     )
 
-    print("end FaceRestoreHelper: ", timer() - startScale)
     result_image = face_restoration(result_image, True, True, 3, 0.5, face_helper, self.upsampler, self.codeformer_net, self.device)
     result_image = Image.fromarray(result_image)
     img_bytes = io.BytesIO()
     result_image.save(img_bytes, format='PNG')
     img_bytes.seek(0)
     endScale = timer()
-    print("end scale: ",  endScale - startScale)
+    print(f"end scale: {endScale - startScale}s")
     name = f"face-swap/results/result_{uuid.uuid4()}.png"
     ObjectStorage.save_file(name, img_bytes)
     return name
