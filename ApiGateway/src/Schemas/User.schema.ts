@@ -14,6 +14,14 @@ export class User {
   })
   images: Image[];
 
+  @Prop({
+    default: 1
+  })
+  limit: number
+
+  @Prop()
+  lastUsage: Date
+  
   @Prop()
   lastSubscription: Date;
 }
