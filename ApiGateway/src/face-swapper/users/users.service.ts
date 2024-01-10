@@ -61,7 +61,7 @@ export class UsersService {
     const extraGenerationAvailable = user?.lastSubscription?.getDate() !== new Date().getDate() && user.limit < 2;    
     
     if (user.limit <= 0) {
-      const lastImage = await this.ImageModel.find().sort({createdAt: -1}).limit(1);
+      const lastImage = await this.ImageModel.find({creator: id}).sort({createdAt: -1}).limit(1);
       const config = await this.ConfigModel.findOne();
 
       return {
