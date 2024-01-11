@@ -41,7 +41,11 @@ export class FaceSwapperService {
 
     const fileName: string = `${randomUUID()}.${file.mimetype.split('/')[1]}`;
     const form = new FormData();
-    form.set( 'source', new Blob([file.buffer], { type: file.mimetype }), fileName );
+    form.set(
+      'source',
+      new Blob([file.buffer], { type: file.mimetype }),
+      fileName,
+    );
     form.set('target', target);
 
     const { data } = await firstValueFrom(
@@ -51,15 +55,15 @@ export class FaceSwapperService {
         })
         .pipe(
           catchError((e) => {
-            this.logger.error(`Ошибка генерации`)
-            this.logger.error(e.response.data)
+            this.logger.error(`Ошибка генерации`);
+            this.logger.error(e.response.data);
             throw new HttpException(e.response.data, e.response.status);
           }),
         ),
     );
 
-    await this.userService.setLimit(id, -1)
-    const image = await this.ImageModel.create({ id: data.id, creator: id });
+    await this.userService.setLimit(id, -1);
+    await this.ImageModel.create({ id: data.id, creator: id });
     return data;
   }
 
@@ -74,16 +78,16 @@ export class FaceSwapperService {
         .get<JobResult>(`${this.configService.get('API')}/${id}`)
         .pipe(
           catchError(async (e) => {
-            this.logger.error(`Ошибка генерации`)
-            this.logger.error(e.response.data)
-            await this.userService.setLimit(image.creator, 1)
+            this.logger.error(`Ошибка генерации`);
+            this.logger.error(e.response.data);
+            await this.userService.setLimit(image.creator, 1);
             throw new HttpException(e.response.data, e.response.status);
           }),
         ),
     );
 
     if (data.status == 'SUCCESS') {
-      this.logger.error(`Успешно сгенерировано: ${data.image}`)
+      this.logger.error(`Успешно сгенерировано: ${data.image}`);
 
       const config = await this.ConfigModel.findOne();
       image.url = data.image;

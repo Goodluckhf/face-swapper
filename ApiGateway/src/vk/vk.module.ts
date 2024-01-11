@@ -7,11 +7,11 @@ import { Directory, DirectorySchema } from 'src/Schemas/Directory.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
-  imports: [ 
+  imports: [
     HttpModule,
     MongooseModule.forFeature([
       { name: Directory.name, schema: DirectorySchema },
-    ])
+    ]),
   ],
   providers: [VkService, MinioService],
   controllers: [VkController],

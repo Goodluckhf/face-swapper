@@ -11,7 +11,7 @@ export class UsersService {
   constructor(
     @InjectModel(User.name) private UserModel: Model<User>,
     @InjectModel(Config.name) private ConfigModel: Model<Config>,
-    @InjectModel(Image.name) private ImageModel: Model<Image>
+    @InjectModel(Image.name) private ImageModel: Model<Image>,
   ) {}
 
   async getUser(id: string): Promise<UserDocument> {
@@ -29,39 +29,45 @@ export class UsersService {
       },
     );
   }
-  
+
   async setSubscription(id: string): Promise<Limit> {
     const user = await this.getUser(id);
-    if(user?.lastSubscription?.getDate() !== new Date().getDate() && user.limit < 2){
-      user.lastSubscription = new Date()
-      user.limit += 1
-      await user.save()      
+    if (
+      user?.lastSubscription?.getDate() !== new Date().getDate() &&
+      user.limit < 2
+    ) {
+      user.lastSubscription = new Date();
+      user.limit += 1;
+      await user.save();
     }
 
-    const limit = await this.getLimit(id)
-    return limit
+    const limit = await this.getLimit(id);
+    return limit;
   }
 
-  async setLimit(id: string, limit: number): Promise<UserDocument>{
+  async setLimit(id: string, limit: number): Promise<UserDocument> {
     const user = await this.getUser(id);
-    user.limit += limit
-    await user.save()
-    return user
+    user.limit += limit;
+    await user.save();
+    return user;
   }
 
   async getLimit(id: string): Promise<Limit> {
-
     const user = await this.getUser(id);
-    if(user?.lastUsage?.getDate() !== new Date().getDate() && user.limit < 2){
-      user.limit += 1
-      user.lastUsage = new Date()
-      await user.save()
+    if (user?.lastUsage?.getDate() !== new Date().getDate() && user.limit < 2) {
+      user.limit += 1;
+      user.lastUsage = new Date();
+      await user.save();
     }
 
-    const extraGenerationAvailable = user?.lastSubscription?.getDate() !== new Date().getDate() && user.limit < 2;    
-    
+    const extraGenerationAvailable =
+      user?.lastSubscription?.getDate() !== new Date().getDate() &&
+      user.limit < 2;
+
     if (user.limit <= 0) {
-      const lastImage = await this.ImageModel.find({creator: id}).sort({createdAt: -1}).limit(1);
+      const lastImage = await this.ImageModel.find({ creator: id })
+        .sort({ createdAt: -1 })
+        .limit(1);
       const config = await this.ConfigModel.findOne();
 
       return {

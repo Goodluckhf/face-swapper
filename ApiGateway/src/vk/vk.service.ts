@@ -9,32 +9,33 @@ import internal from 'stream';
 export class VkService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly minioService: MinioService
+    private readonly minioService: MinioService,
   ) {}
 
-  async streamToBlob (stream: internal.Readable): Promise<Blob>{
-    const mimeType = stream['headers']['content-type']
+  async streamToBlob(stream: internal.Readable): Promise<Blob> {
+    const mimeType = stream['headers']['content-type'];
 
     return new Promise((resolve, reject) => {
-      const chunks = []
+      const chunks = [];
       stream
-        .on('data', chunk => chunks.push(chunk))
+        .on('data', (chunk) => chunks.push(chunk))
         .once('end', () => {
-          const blob = mimeType != null
-            ? new Blob(chunks, { type: mimeType })
-            : new Blob(chunks)
-          resolve(blob)
+          const blob =
+            mimeType != null
+              ? new Blob(chunks, { type: mimeType })
+              : new Blob(chunks);
+          resolve(blob);
         })
-        .once('error', reject)
-    })
+        .once('error', reject);
+    });
   }
 
   async uploadFile(file: UploadDto) {
     const { photo, uploadUrl } = file;
-    const stream = await this.minioService.getFile(photo)
-    const blob = await this.streamToBlob(stream)
+    const stream = await this.minioService.getFile(photo);
+    const blob = await this.streamToBlob(stream);
     const form = new FormData();
-    form.set( 'photo', blob, `${randomUUID()}.png`);
+    form.set('photo', blob, `${randomUUID()}.png`);
     const { data } = await this.httpService.post(uploadUrl, form).toPromise();
     return data;
   }
