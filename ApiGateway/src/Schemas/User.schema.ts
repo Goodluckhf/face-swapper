@@ -15,15 +15,15 @@ export class User {
   images: Image[];
 
   @Prop({
-    default: 1
+    default: 1,
   })
-  limit: number
+  limit: number;
 
   @Prop({
-    default: new Date()
+    default: new Date(),
   })
-  lastUsage: Date
-  
+  lastUsage: Date;
+
   @Prop()
   lastSubscription: Date;
 }
