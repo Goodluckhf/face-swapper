@@ -19,6 +19,7 @@ import { MinioService } from './minio/minio.service';
 import { UsersService } from './users/users.service';
 import { VkAuthGuard } from '../guards/vk-auth/vk-auth.guard';
 import { Response } from 'express';
+import { User } from 'src/decorators/User.decorator';
 
 @Controller('api/face-swapper')
 export class FaceSwapperController {
@@ -40,11 +41,11 @@ export class FaceSwapperController {
   @UseInterceptors(FileInterceptor('source'))
   @Post()
   async swapFace(
+    @User() user: string,
     @UploadedFile() source: Express.Multer.File,
-    @Body('id') id: string,
     @Body('target') target: string,
   ) {
-    return await this.faceSwapperService.swapFace(id, source, target);
+    return await this.faceSwapperService.swapFace(user, source, target);
   }
 
   @UseGuards(VkAuthGuard)
@@ -60,14 +61,14 @@ export class FaceSwapperController {
   }
 
   @UseGuards(VkAuthGuard)
-  @Get('limits/:id')
-  async getLimit(@Param('id') id: string) {
-    return this.usersService.getLimit(id);
+  @Get('limits')
+  async getLimit(@User() user: string) {
+    return this.usersService.getLimit(user);
   }
 
   @UseGuards(VkAuthGuard)
-  @Put('limits/:id')
-  async setUser(@Param('id') id: string) {
-    return await this.usersService.setSubscription(id);
+  @Put('limits')
+  async setUser(@User() user: string) {
+    return await this.usersService.setSubscription(user)
   }
 }
