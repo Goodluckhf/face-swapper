@@ -7,7 +7,7 @@ import { MINIO_CONNECTION } from 'nestjs-minio';
 import { Client } from 'minio';
 import { Category, File } from './minio.models';
 import * as path from 'path';
-import lodash from 'lodash';
+import { shuffle } from 'lodash';
 
 @Injectable()
 export class MinioService {
@@ -54,7 +54,7 @@ export class MinioService {
       const list = files.filter((file) => file.dir == category.path);
       let photos = list.map((item) => ({ name: item.path }));
       if (category.path.includes('/none/')) {
-        photos = lodash.shuffle(photos);
+        photos = shuffle(photos);
       }
 
       result.push({
