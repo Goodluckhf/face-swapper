@@ -55,7 +55,7 @@ export class FaceSwapperService {
         })
         .pipe(
           catchError((e) => {
-            this.logger.error(`Ошибка генерации`);
+            this.logger.error(`Ошибка генерации`, e);
             this.logger.error(e.response.data);
             throw new HttpException(e.response.data, e.response.status);
           }),
@@ -78,7 +78,7 @@ export class FaceSwapperService {
         .get<JobResult>(`${this.configService.get('API')}/${id}`)
         .pipe(
           catchError(async (e) => {
-            this.logger.error(`Ошибка генерации`);
+            this.logger.error(`Ошибка генерации`, e);
             this.logger.error(e.response.data);
             await this.userService.setLimit(image.creator, 1);
             throw new HttpException(e.response.data, e.response.status);
@@ -87,7 +87,7 @@ export class FaceSwapperService {
     );
 
     if (data.status == 'SUCCESS') {
-      this.logger.error(`Успешно сгенерировано: ${data.image}`);
+      this.logger.info(`Успешно сгенерировано: ${data.image}`);
 
       const config = await this.ConfigModel.findOne();
       image.url = data.image;
