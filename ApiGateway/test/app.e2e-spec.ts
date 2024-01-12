@@ -20,6 +20,7 @@ import { Directory, DirectorySchema } from '../src/Schemas/Directory.schema';
 import { Readable } from 'stream';
 import { JobResult } from 'src/face-swapper/face-swapper.models';
 import { from } from 'rxjs';
+import { LoggerModule } from 'nestjs-pino';
 
 @Injectable()
 export class MockGuard implements CanActivate {
@@ -44,6 +45,7 @@ describe('FaceSwapperController (e2e)', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
+        LoggerModule.forRoot(),
         rootMongooseTestModule(),
         MongooseModule.forFeature([
           { name: User.name, schema: UserSchema },
@@ -137,8 +139,8 @@ describe('FaceSwapperController (e2e)', () => {
         .mockImplementationOnce(() => from([{ data }]) as any);
 
       const result = await faceSwapperController.swapFace(
-        file,
         id,
+        file,
         'man1.jpeg',
       );
 

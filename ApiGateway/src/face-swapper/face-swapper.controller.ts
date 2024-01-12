@@ -19,7 +19,7 @@ import { MinioService } from './minio/minio.service';
 import { UsersService } from './users/users.service';
 import { VkAuthGuard } from '../guards/vk-auth/vk-auth.guard';
 import { Response } from 'express';
-import { User } from 'src/decorators/User.decorator';
+import { User } from '../decorators/User.decorator';
 
 @Controller('api/face-swapper')
 export class FaceSwapperController {
