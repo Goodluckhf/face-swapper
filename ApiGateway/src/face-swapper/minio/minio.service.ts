@@ -7,6 +7,7 @@ import { MINIO_CONNECTION } from 'nestjs-minio';
 import { Client } from 'minio';
 import { Category, File } from './minio.models';
 import * as path from 'path';
+import lodash from 'lodash';
 
 @Injectable()
 export class MinioService {
@@ -49,12 +50,17 @@ export class MinioService {
     const allowedCategories = await this.DirectoryModel.find({ sex });
     const files = await this.getFiles();
     const result: Category[] = [];
-    for (let category of allowedCategories) {
+    for (const category of allowedCategories) {
       const list = files.filter((file) => file.dir == category.path);
+      let photos = list.map((item) => ({ name: item.path }));
+      if (category.path.includes('/none/')) {
+        photos = lodash.shuffle(photos);
+      }
+
       result.push({
         name: category.name,
         path: category.path,
-        photos: list.map((item) => ({ name: item.path })),
+        photos,
       });
     }
 

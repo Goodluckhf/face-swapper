@@ -15,7 +15,7 @@ export class UsersService {
   ) {}
 
   async getUser(id: string): Promise<UserDocument> {
-    return await this.UserModel.findOneAndUpdate(
+    return this.UserModel.findOneAndUpdate(
       {
         id,
       },
