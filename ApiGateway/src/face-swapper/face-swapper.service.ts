@@ -72,6 +72,11 @@ export class FaceSwapperService {
     if (!image) {
       throw new HttpException('Image not found', HttpStatus.NOT_FOUND);
     }
+    
+    const { limit } = await this.userService.getLimit(image.creator);
+    if (limit <= 0) {
+      throw new ForbiddenException();
+    }
 
     const { data } = await firstValueFrom(
       this.httpService
