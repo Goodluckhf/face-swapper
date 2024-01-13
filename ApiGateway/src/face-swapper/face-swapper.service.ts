@@ -55,9 +55,10 @@ export class FaceSwapperService {
           headers: { 'content-type': 'multipart/form-data' },
         })
         .pipe(
-          catchError((e) => {
+          catchError(async (e) => {
             this.logger.error(`Ошибка генерации`, e);
             this.logger.error(e.response.data);
+            await this.userService.setLimit(id, 1);
             throw new HttpException(e.response.data, e.response.status);
           }),
         ),
@@ -72,9 +73,9 @@ export class FaceSwapperService {
     if (!image) {
       throw new HttpException('Image not found', HttpStatus.NOT_FOUND);
     }
-    
+
     const { limit } = await this.userService.getLimit(image.creator);
-    if (limit <= 0) {
+    if (limit < 0) {
       throw new ForbiddenException();
     }
 
