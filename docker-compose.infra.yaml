@@ -178,8 +178,8 @@ services:
       - app-net
   mongodb-exporter:
     container_name: mongodb-exporter
-    image: percona/mongodb_exporter:0.40.0
-    command: "--collect-all"
+    image: percona/mongodb_exporter:0.20
+    command: "--mongodb.uri=mongodb://mongo:27017"
     restart: always
     env_file:
       - .env.infra
