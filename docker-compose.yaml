@@ -10,6 +10,8 @@ x-environment: &env
 services:
   inswapper:
     image: just1ce/inswapper-py-api:1.0.0
+    deploy:
+      replicas: 3
     networks:
       - app-net
     build:
@@ -35,11 +37,12 @@ services:
       dockerfile: worker.dockerfile
     command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
     deploy:
+      replicas: 3
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              device_ids: ["GPU-f9cff33c-ece4-3307-cbd0-bdb67207374f"]
               capabilities: [gpu]
     environment: *env
     restart: unless-stopped
@@ -51,9 +54,88 @@ services:
       options:
         fluentd-address: 0.0.0.0:24224
         tag: default.inswapper-worker
-
+  worker1:
+    image: just1ce/inswapper-py-worker:1.0.0
+    networks:
+      - app-net
+    build:
+      context: ./InswapperService
+      dockerfile: worker.dockerfile
+    command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
+    deploy:
+      replicas: 3
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["GPU-a521bc92-5850-6584-71a8-6645cd13e3c1"]
+              capabilities: [gpu]
+    environment: *env
+    restart: unless-stopped
+    volumes:
+      - ./InswapperService:/usr/src/app
+      - tmp-images-volume:/usr/src/app/tmp/
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 0.0.0.0:24224
+        tag: default.inswapper-worker
+  worker2:
+    image: just1ce/inswapper-py-worker:1.0.0
+    networks:
+      - app-net
+    build:
+      context: ./InswapperService
+      dockerfile: worker.dockerfile
+    command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
+    deploy:
+      replicas: 3
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["GPU-351599a6-27b4-7eb3-2e4c-554a9bddee44"]
+              capabilities: [gpu]
+    environment: *env
+    restart: unless-stopped
+    volumes:
+      - ./InswapperService:/usr/src/app
+      - tmp-images-volume:/usr/src/app/tmp/
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 0.0.0.0:24224
+        tag: default.inswapper-worker
+  worker3:
+    image: just1ce/inswapper-py-worker:1.0.0
+    networks:
+      - app-net
+    build:
+      context: ./InswapperService
+      dockerfile: worker.dockerfile
+    command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
+    deploy:
+      replicas: 3
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["GPU-aec529fe-704e-c6bd-28d4-b8ed5ab1c718"]
+              capabilities: [gpu]
+    environment: *env
+    restart: unless-stopped
+    volumes:
+      - ./InswapperService:/usr/src/app
+      - tmp-images-volume:/usr/src/app/tmp/
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 0.0.0.0:24224
+        tag: default.inswapper-worker
   api:
     image: just1ce/inswapper-api-gateway:1.0.0
+    deploy:
+      replicas: 3
     networks:
       - app-net
     build:
