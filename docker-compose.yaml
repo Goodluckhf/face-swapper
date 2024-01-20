@@ -19,8 +19,6 @@ services:
       dockerfile: app.dockerfile
     command: uvicorn main:app --host 0.0.0.0
     restart: unless-stopped
-    volumes:
-      - tmp-images-volume:/usr/src/app/tmp/
     environment: *env
     logging:
       driver: 'fluentd'
@@ -46,9 +44,6 @@ services:
               capabilities: [gpu]
     environment: *env
     restart: unless-stopped
-    volumes:
-      - ./InswapperService:/usr/src/app
-      - tmp-images-volume:/usr/src/app/tmp/
     logging:
       driver: 'fluentd'
       options:
@@ -72,9 +67,6 @@ services:
               capabilities: [gpu]
     environment: *env
     restart: unless-stopped
-    volumes:
-      - ./InswapperService:/usr/src/app
-      - tmp-images-volume:/usr/src/app/tmp/
     logging:
       driver: 'fluentd'
       options:
@@ -98,9 +90,6 @@ services:
               capabilities: [gpu]
     environment: *env
     restart: unless-stopped
-    volumes:
-      - ./InswapperService:/usr/src/app
-      - tmp-images-volume:/usr/src/app/tmp/
     logging:
       driver: 'fluentd'
       options:
@@ -124,9 +113,6 @@ services:
               capabilities: [gpu]
     environment: *env
     restart: unless-stopped
-    volumes:
-      - ./InswapperService:/usr/src/app
-      - tmp-images-volume:/usr/src/app/tmp/
     logging:
       driver: 'fluentd'
       options:
@@ -158,9 +144,6 @@ services:
       options:
         fluentd-address: 0.0.0.0:24224
         tag: json.api
-
-volumes:
-  tmp-images-volume:
 
 networks:
   app-net:
