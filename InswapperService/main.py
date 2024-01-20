@@ -1,19 +1,19 @@
-import io, os, uuid
 from exceptions import TargetException, FaceNotFoundException, InvalidSourceException
-from fastapi import Body, FastAPI, Form, Request, HTTPException, UploadFile, File, status, Response
-from storage.local_storage import LocalStorage
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Form, UploadFile, File, status, Response
+from storage.object_storage import ObjectStorage
 from worker import process_image, celery
-from celery.result import AsyncResult, TimeoutError
-from PIL import Image
-from asyncio import run, get_running_loop
+from celery.result import AsyncResult
+import uuid
+from asyncio import get_running_loop
+import io
 app = FastAPI()
 
 @app.post('/', status_code=201)
 async def start_processing(source: UploadFile = File(), target: str = Form()):
     if source.content_type not in ['image/jpeg', 'image/webp', 'image/png']:
         raise InvalidSourceException()
-    path = LocalStorage.save_file(source.filename, await source.read())
+    path = f"tmp/{uuid.uuid4()}-{source.filename}"
+    ObjectStorage.save_file(path, io.BytesIO(await source.read()))
     task = process_image.delay(path, target)
     return { "id": task.id }
 
