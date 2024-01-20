@@ -23,8 +23,11 @@ celery.conf.task_send_sent_event = True
 def process_image(self, source_file, target: str):
     startFaceswap = timer()
 
-    source_img = Image.open(source_file)
-    os.remove(source_file)
+    source_img_file_response = ObjectStorage.get_file(source_file)
+    source_img = Image.open(source_img_file_response)
+    source_img_file_response.close()
+    source_img_file_response.release_conn()
+    ObjectStorage.remove_file(source_file)
 
     try:
         target_response = ObjectStorage.get_file(target)

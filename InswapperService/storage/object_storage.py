@@ -1,10 +1,7 @@
 import os
 import io
-import asyncio
 from minio import Minio
-from minio.error import S3Error
-from datetime import timedelta
-from exceptions import TargetException
+
 
 class ObjectStorage:
 
@@ -28,4 +25,6 @@ class ObjectStorage:
             name
         )
 
-            
+    @staticmethod
+    def remove_file(name: str):
+        return ObjectStorage.__client.remove_object(ObjectStorage.__bucket, name)
