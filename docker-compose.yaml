@@ -23,7 +23,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.inswapper
 
   worker:
@@ -47,7 +47,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.inswapper-worker
   worker1:
     image: just1ce/inswapper-py-worker:1.0.0
@@ -70,7 +70,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.inswapper-worker
   worker2:
     image: just1ce/inswapper-py-worker:1.0.0
@@ -93,7 +93,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.inswapper-worker
   worker3:
     image: just1ce/inswapper-py-worker:1.0.0
@@ -116,7 +116,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.inswapper-worker
   api:
     image: just1ce/inswapper-api-gateway:1.0.0
@@ -142,7 +142,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: json.api
 
 networks:

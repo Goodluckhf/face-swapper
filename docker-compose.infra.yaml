@@ -23,7 +23,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.minio
   cdn:
     image: nginxinc/nginx-s3-gateway:latest-20231222
@@ -45,7 +45,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.cdn
   reverse-proxy:
     image: just1ce/inswapper-reverse-proxy:1.0.0
@@ -64,7 +64,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.reverse-proxy
 
   redis:
@@ -79,7 +79,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.redis
 
   mongo:
@@ -97,7 +97,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 0.0.0.0:24224
+        fluentd-address: 192.168.0.2:24224
         tag: default.mongo
   certbot:
     image: certbot/certbot:latest
