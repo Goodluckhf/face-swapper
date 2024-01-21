@@ -1,0 +1,87 @@
+version: "2"
+
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '5m'
+    max-file: '1'
+
+
+x-environment: &env
+  - CELERY_BROKER_URL=redis://192.168.0.2:6379/0
+  - CELERY_RESULT_BACKEND=redis://192.168.0.2:6379/0
+  - ACCESS_KEY=minioadmin
+  - SECRET_KEY=minioadmin
+  - ENDPOINT=192.168.0.2:9000
+  - BUCKET=data
+
+services:
+  worker:
+    image: just1ce/inswapper-py-worker:1.0.0
+    networks:
+      - app-net
+    command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment: *env
+    restart: unless-stopped
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 192.168.0.2:24224
+        tag: default.inswapper-worker
+
+  prometheus:
+    image: just1ce/inswapper-prometheus:1.0.0
+    container_name: prometheus
+    networks:
+      - app-net
+    build:
+      context: ./prometheus
+      dockerfile: ./Dockerfile
+    volumes:
+      - prometheus-data:/prometheus
+    restart: always
+    logging: *default-logging
+    ports:
+      - 192.168.0.3:9090:9090
+
+  process-exporter:
+    image: ncabatoff/process-exporter
+    container_name: process-exporter
+    privileged: true
+    restart: always
+    networks:
+      - app-net
+    volumes:
+      - /proc:/host/proc
+      - ./process-exporter:/config
+    command: --procfs /host/proc -config.path /config/all.yml --web.listen-address=:9256
+    logging: *default-logging
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:v1.7.0
+    restart: always
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    logging: *default-logging
+    networks:
+      - app-net
+
+networks:
+  app-net:
+
+volumes:
+  prometheus-data:

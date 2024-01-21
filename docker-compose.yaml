@@ -11,7 +11,7 @@ services:
   inswapper:
     image: just1ce/inswapper-py-api:1.0.0
     deploy:
-      replicas: 3
+      replicas: 5
     networks:
       - app-net
     build:
@@ -35,7 +35,7 @@ services:
       dockerfile: worker.dockerfile
     command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
     deploy:
-      replicas: 3
+      replicas: 4
       resources:
         reservations:
           devices:
@@ -58,7 +58,7 @@ services:
       dockerfile: worker.dockerfile
     command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
     deploy:
-      replicas: 3
+      replicas: 4
       resources:
         reservations:
           devices:
@@ -81,7 +81,7 @@ services:
       dockerfile: worker.dockerfile
     command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
     deploy:
-      replicas: 3
+      replicas: 4
       resources:
         reservations:
           devices:
@@ -104,7 +104,7 @@ services:
       dockerfile: worker.dockerfile
     command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
     deploy:
-      replicas: 3
+      replicas: 4
       resources:
         reservations:
           devices:
@@ -121,7 +121,7 @@ services:
   api:
     image: just1ce/inswapper-api-gateway:1.0.0
     deploy:
-      replicas: 3
+      replicas: 5
     networks:
       - app-net
     build:
