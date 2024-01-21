@@ -43,7 +43,7 @@ services:
       - app-net
     build:
       context: ./prometheus
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.slave
     volumes:
       - prometheus-data:/prometheus
     restart: always
