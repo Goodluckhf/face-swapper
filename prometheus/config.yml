@@ -14,9 +14,6 @@ scrape_configs:
   - job_name: 'nginx-exporter'
     static_configs:
       - targets: ['nginx-exporter:9913']
-  - job_name: 'cadvisor'
-    static_configs:
-      - targets: ['cadvisor:8080']
   - job_name: 'process-exporter'
     static_configs:
       - targets: ['process-exporter:9256']
@@ -26,3 +23,17 @@ scrape_configs:
   - job_name: 'nvidia-exporter'
     static_configs:
       - targets: ['nvidia-smi-exporter:9835']
+  - job_name: 'federate'
+    scrape_interval: 15s
+
+    honor_labels: true
+    metrics_path: '/federate'
+
+    params:
+      'match[]':
+        - '{job="prometheus"}'
+        - '{__name__=~"job:.*"}'
+
+    static_configs:
+      - targets:
+        - '192.168.0.3:9090'

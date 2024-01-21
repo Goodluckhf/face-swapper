@@ -12,7 +12,7 @@ services:
     networks:
       - app-net
     ports:
-      - 127.0.0.1:9090:9090
+      - 192.168.0.2:9090:9090
     volumes:
       - minio_storage:/data
     restart: unless-stopped
@@ -74,8 +74,8 @@ services:
     image: redis:7.0.5-alpine
     volumes:
       - redis-volume:/data
-    expose:
-      - 6379
+    ports:
+      - 192.168.0.2:6379:6379
     logging:
       driver: 'fluentd'
       options:
@@ -178,26 +178,14 @@ services:
       - app-net
   mongodb-exporter:
     container_name: mongodb-exporter
-    image: percona/mongodb_exporter:0.20
-    command: "--mongodb.uri=mongodb://mongo:27017"
+    image: percona/mongodb_exporter:0.40
+    command: "--mongodb.uri=mongodb://root:example@mongo:27017"
     restart: always
     env_file:
       - .env.infra
     networks:
       - app-net
     logging: *default-logging
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.46.0
-    restart: always
-    logging: *default-logging
-    networks:
-      - app-net
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
   grafana:
     container_name: grafana
     restart: always
@@ -217,8 +205,8 @@ services:
       context: ./fluentd
       dockerfile: ./Dockerfile
     ports:
-      - 127.0.0.1:24224:24224
-      - 127.0.0.1:24224:24224/udp
+      - 192.168.0.2:24224:24224
+      - 192.168.0.2:24224:24224/udp
     logging: *default-logging
     networks:
       - app-net
