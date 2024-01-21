@@ -12,7 +12,8 @@ services:
     networks:
       - app-net
     ports:
-      - 192.168.0.2:9090:9090
+      - 127.0.0.1:9090:9090
+      - 192.168.0.2:9000:9000
     volumes:
       - minio_storage:/data
     restart: unless-stopped
