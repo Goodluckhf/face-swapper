@@ -54,7 +54,7 @@ def process_image(self, source_file, target: str):
         use_parse=True,
     )
 
-    result_image = face_restoration(result_image, True, True, 3, 0.5, face_helper, self.upsampler, self.codeformer_net, self.device)
+    result_image = face_restoration(result_image, True, True, 1, 0.5, face_helper, self.upsampler, self.codeformer_net, self.device)
     result_image = Image.fromarray(result_image)
     img_bytes = io.BytesIO()
     result_image.save(img_bytes, format='PNG')
