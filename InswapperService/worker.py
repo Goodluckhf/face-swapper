@@ -45,7 +45,7 @@ def process_image(self, source_file, target: str):
 
     result_image = cv2.cvtColor(np.array(result_image), cv2.COLOR_RGB2BGR)
     face_helper = FaceRestoreHelper(
-        2,
+        1,
         self.face_det,
         self.face_parse,
         face_size=512,
@@ -54,7 +54,7 @@ def process_image(self, source_file, target: str):
         use_parse=True,
     )
 
-    result_image = face_restoration(result_image, True, True, 1, 0.5, face_helper, self.upsampler, self.codeformer_net, self.device)
+    result_image = face_restoration(result_image, False, True, 1, 0.5, face_helper, self.upsampler, self.codeformer_net, self.device)
     result_image = Image.fromarray(result_image)
     img_bytes = io.BytesIO()
     result_image.save(img_bytes, format='PNG')
