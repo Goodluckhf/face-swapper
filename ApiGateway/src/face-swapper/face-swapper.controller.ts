@@ -68,7 +68,7 @@ export class FaceSwapperController {
 
   @UseGuards(VkAuthGuard)
   @Put('limits')
-  async setUser(@User() user: string) {
-    return await this.usersService.setSubscription(user)
+  async setUser(@User() user: string, @Body('groupIds') groupIds?: number[]) {
+    return await this.usersService.setSubscription(user, groupIds);
   }
 }
