@@ -4,7 +4,7 @@ import { Image } from './Image.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
   @Prop()
   id: string;
@@ -15,12 +15,18 @@ export class User {
   images: Image[];
 
   @Prop({
+    type: [Number],
+    default: [],
+  })
+  subscribedGroups: number[];
+
+  @Prop({
     default: 1,
   })
   limit: number;
 
   @Prop({
-    default: new Date(),
+    default: () => new Date(),
   })
   lastUsage: Date;
 

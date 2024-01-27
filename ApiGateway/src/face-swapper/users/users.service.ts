@@ -30,16 +30,20 @@ export class UsersService {
     );
   }
 
-  async setSubscription(id: string): Promise<Limit> {
+  async setSubscription(id: string, groupIds?: number[]): Promise<Limit> {
     const user = await this.getUser(id);
+    if (groupIds) {
+      user.subscribedGroups = [...user.subscribedGroups, ...groupIds];
+    }
+
     if (
       user?.lastSubscription?.getDate() !== new Date().getDate() &&
       user.limit < 2
     ) {
       user.lastSubscription = new Date();
       user.limit += 1;
-      await user.save();
     }
+    await user.save();
 
     const limit = await this.getLimit(id);
     return limit;
@@ -64,20 +68,28 @@ export class UsersService {
       user?.lastSubscription?.getDate() !== new Date().getDate() &&
       user.limit < 2;
 
+    const config = await this.ConfigModel.findOne();
+    const availableGroups = config.groupids.filter((id) => {
+      return !user.subscribedGroups.includes(id);
+    });
+    const commonResult = {
+      limit: user.limit,
+      extraGenerationAvailable,
+      groupIds: availableGroups,
+    };
     if (user.limit <= 0) {
       const lastImage = await this.ImageModel.find({ creator: id })
         .sort({ createdAt: -1 })
         .limit(1);
-      const config = await this.ConfigModel.findOne();
 
       return {
-        limit: user.limit,
+        ...commonResult,
         result: lastImage[0]?.url,
         textphoto: config?.textphoto,
         textcaption: config?.textcaption,
       };
     }
 
-    return { limit: user.limit, extraGenerationAvailable };
+    return commonResult;
   }
 }
