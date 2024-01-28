@@ -38,7 +38,7 @@ export class FaceSwapperService {
     if (limit <= 0) {
       throw new ForbiddenException();
     }
-    await this.userService.setLimit(id, -1);
+    await this.userService.setLimit(id, -1, true);
 
     const fileName: string = `${randomUUID()}.${file.mimetype.split('/')[1]}`;
     const form = new FormData();

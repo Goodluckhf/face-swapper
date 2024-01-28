@@ -32,35 +32,35 @@ export class UsersService {
 
   async setSubscription(id: string, groupIds?: number[]): Promise<Limit> {
     const user = await this.getUser(id);
-    if (groupIds) {
+    if (groupIds && groupIds.length) {
       user.subscribedGroups = [...user.subscribedGroups, ...groupIds];
-    }
-
-    if (
-      user?.lastSubscription?.getDate() !== new Date().getDate() &&
-      user.limit < 2
-    ) {
-      user.lastSubscription = new Date();
       user.limit += 1;
+      user.lastSubscription = new Date();
+      await user.save();
     }
-    await user.save();
 
-    const limit = await this.getLimit(id);
-    return limit;
+    return this.getLimit(id);
   }
 
-  async setLimit(id: string, limit: number): Promise<UserDocument> {
+  async setLimit(
+    id: string,
+    limit: number,
+    updateLastUsage = false,
+  ): Promise<UserDocument> {
     const user = await this.getUser(id);
     user.limit += limit;
+    if (updateLastUsage) {
+      user.lastUsage = new Date();
+    }
     await user.save();
     return user;
   }
 
   async getLimit(id: string): Promise<Limit> {
     const user = await this.getUser(id);
-    if (user?.lastUsage?.getDate() !== new Date().getDate() && user.limit < 2) {
+    const todayGenerated = user?.lastUsage?.getDate() === new Date().getDate();
+    if (!todayGenerated && user.limit < 1) {
       user.limit += 1;
-      user.lastUsage = new Date();
       await user.save();
     }
 
