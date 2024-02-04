@@ -10,6 +10,7 @@ import { Directory, DirectorySchema } from '../Schemas/Directory.schema';
 import { MinioService } from './minio/minio.service';
 import { UsersService } from './users/users.service';
 import { VkAuthGuard } from '../guards/vk-auth/vk-auth.guard';
+import { VkRequestAuthGuard } from '../guards/vk-auth/vk-request-auth.guard';
 
 @Module({
   imports: [
@@ -22,7 +23,13 @@ import { VkAuthGuard } from '../guards/vk-auth/vk-auth.guard';
     ]),
   ],
   controllers: [FaceSwapperController],
-  providers: [FaceSwapperService, UsersService, MinioService, VkAuthGuard],
+  providers: [
+    FaceSwapperService,
+    UsersService,
+    MinioService,
+    VkAuthGuard,
+    VkRequestAuthGuard,
+  ],
   exports: [MinioService],
 })
 export class FaceSwapperModule {}

@@ -20,6 +20,7 @@ import { UsersService } from './users/users.service';
 import { VkAuthGuard } from '../guards/vk-auth/vk-auth.guard';
 import { Response } from 'express';
 import { User } from '../decorators/User.decorator';
+import { VkRequestAuthGuard } from '../guards/vk-auth/vk-request-auth.guard';
 
 @Controller('api/face-swapper')
 export class FaceSwapperController {
@@ -66,7 +67,7 @@ export class FaceSwapperController {
     return this.usersService.getLimit(user);
   }
 
-  @UseGuards(VkAuthGuard)
+  @UseGuards(VkAuthGuard, VkRequestAuthGuard)
   @Put('limits')
   async setUser(@User() user: string, @Body('groupIds') groupIds?: number[]) {
     return await this.usersService.setSubscription(user, groupIds);
