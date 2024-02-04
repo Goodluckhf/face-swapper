@@ -11,7 +11,7 @@ import { Blob } from 'buffer';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Image } from '../Schemas/Image.schema';
+import { BasePhoto, Image } from '../Schemas/Image.schema';
 import { Config } from '../Schemas/Config.schema';
 import { UsersService } from './users/users.service';
 import { randomUUID } from 'crypto';
@@ -64,8 +64,30 @@ export class FaceSwapperService {
         ),
     );
 
-    await this.ImageModel.create({ id: data.id, creator: id });
+    const image: Partial<Image> = { id: data.id, creator: id };
+    const basePhotoSettings = this.getBasePhotoSettings(target);
+    if (basePhotoSettings) {
+      image.basePhoto = basePhotoSettings;
+    }
+    await this.ImageModel.create(image);
     return data;
+  }
+
+  getBasePhotoSettings(photoUrl: string): BasePhoto | null {
+    const basePath = photoUrl.replace('base-images/', '');
+    const match = basePath.match(
+      /^(?<category>[a-z0-9\-]+)\/(?<sex>[a-z]+)\/(?<photoId>[a-zA-Z0-9\-]+)\.(?<extension>[a-z]+)$/,
+    );
+    if (!match) {
+      return null;
+    }
+
+    return {
+      photoId: match.groups.photoId,
+      sex: match.groups.sex,
+      category: match.groups.category,
+      extension: match.groups.extension,
+    };
   }
 
   async getResult(id: string): Promise<Result | 'PENDING'> {
@@ -103,6 +125,7 @@ export class FaceSwapperService {
         groupids: config.groupids,
         gr: `https://vk.com/app/${this.configService.get('MINI_APP_ID')}`,
         result: data.image,
+        basePhoto: image.basePhoto,
         textphoto: config.textphoto,
         textcaption: config.textcaption,
       };
