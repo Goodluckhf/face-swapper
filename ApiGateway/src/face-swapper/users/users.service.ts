@@ -32,12 +32,28 @@ export class UsersService {
 
   async setSubscription(id: string, groupIds?: number[]): Promise<Limit> {
     const user = await this.getUser(id);
-    if (groupIds && groupIds.length) {
-      user.subscribedGroups = [...user.subscribedGroups, ...groupIds];
-      user.limit += 1;
-      user.lastSubscription = new Date();
-      await user.save();
+    const config = await this.ConfigModel.findOne();
+
+    const availableGroups = config.groupids.filter((id) => {
+      return !user.subscribedGroups.includes(id);
+    });
+
+    if (!groupIds || !groupIds.length) {
+      return this.getLimit(id);
     }
+
+    const isAvailableInputGroups = groupIds.every((inputGroupId) => {
+      return availableGroups.includes(inputGroupId);
+    });
+
+    if (!isAvailableInputGroups) {
+      return this.getLimit(id);
+    }
+
+    user.subscribedGroups = [...user.subscribedGroups, ...groupIds];
+    user.limit += 1;
+    user.lastSubscription = new Date();
+    await user.save();
 
     return this.getLimit(id);
   }
