@@ -16,16 +16,31 @@ export class VkRequestAuthGuard implements CanActivate {
       return this.checkSign(context);
     } catch (error) {
       this.logger.error('VkRequestAuthGuard error', error);
+      return false;
     }
+  }
+
+  private getUser(request: Request): string | null {
+    const authorization = request.headers['authorization'];
+    if (!authorization) return null;
+
+    const token = authorization
+      .split('&')
+      .find((item) => /vk_user_id/.test(item));
+    if (token) {
+      return token.split('=')[1];
+    }
+    return null;
   }
 
   private checkSign(context: ExecutionContext): boolean {
     const secretKey = this.configService.get('VK_SECRET_KEY');
-    const adminUserId = this.configService.get('VK_ADMIN_USER_ID');
+    // const adminUserId = this.configService.get('VK_ADMIN_USER_ID');
     const vkMiniAppId = this.configService.get('VK_MINI_APP_ID');
     const req: Request = context.switchToHttp().getRequest();
     const { ts, sign, ...signPayload } = req.body;
-    if (!ts || !sign) {
+    const user = this.getUser(req);
+    if (!ts || !sign || !user) {
       this.logger.warn('SIGN | there is not ts or sign', {
         body: req.body,
       });
@@ -43,7 +58,7 @@ export class VkRequestAuthGuard implements CanActivate {
       app_id: vkMiniAppId,
       request_id: formatedPayload,
       ts,
-      user_id: adminUserId,
+      user_id: user,
     };
 
     const hashParamsString = Object.entries(hashParams)
@@ -67,6 +82,14 @@ export class VkRequestAuthGuard implements CanActivate {
       .replace(/\//g, '_')
       .replace(/=$/, '');
 
-    return paramsHash == sign;
+    const result = paramsHash == sign;
+
+    if (!result) {
+      this.logger.warn(
+        `SIGN_INCORRECT [paramsHash:${paramsHash}] | [sign:${sign}] | hashParamsString: ${hashParamsString} | formatedPayload: ${formatedPayload} | ts:${ts}`,
+      );
+    }
+
+    return result;
   }
 }
