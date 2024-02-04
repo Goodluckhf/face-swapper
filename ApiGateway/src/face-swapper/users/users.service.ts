@@ -85,6 +85,7 @@ export class UsersService {
       return {
         ...commonResult,
         result: lastImage[0]?.url,
+        basePhoto: lastImage[0]?.basePhoto,
         textphoto: config?.textphoto,
         textcaption: config?.textcaption,
       };

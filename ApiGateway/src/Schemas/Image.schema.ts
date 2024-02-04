@@ -1,8 +1,14 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument, mongo } from 'mongoose';
-import { User } from './User.schema';
+import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
 
 export type ImageDocument = HydratedDocument<Image>;
+
+export interface BasePhoto {
+  category: string;
+  sex: string;
+  photoId: string;
+  extension: string;
+}
 
 @Schema({ timestamps: true })
 export class Image {
@@ -11,6 +17,16 @@ export class Image {
 
   @Prop()
   url: string;
+
+  @Prop(
+    raw({
+      category: { type: String },
+      sex: { type: String },
+      photoId: { type: String },
+      extension: { type: String },
+    }),
+  )
+  basePhoto: BasePhoto;
 
   @Prop()
   creator: string;
