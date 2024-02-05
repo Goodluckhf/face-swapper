@@ -127,8 +127,6 @@ services:
     build:
       context: ./ApiGateway
       dockerfile: app.dockerfile
-    env_file:
-      - .env
     environment:
       - API=http://inswapper:8000
       - MONGO=mongodb://root:example@mongo:27017/

@@ -11,6 +11,7 @@ import { MinioService } from './minio/minio.service';
 import { UsersService } from './users/users.service';
 import { VkAuthGuard } from '../guards/vk-auth/vk-auth.guard';
 import { VkRequestAuthGuard } from '../guards/vk-auth/vk-request-auth.guard';
+import { VkAppSettingsService } from '../guards/vk-auth/vk-app-settings.service';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { VkRequestAuthGuard } from '../guards/vk-auth/vk-request-auth.guard';
     MinioService,
     VkAuthGuard,
     VkRequestAuthGuard,
+    VkAppSettingsService,
   ],
   exports: [MinioService],
 })
