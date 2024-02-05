@@ -3,6 +3,10 @@ import { HydratedDocument } from 'mongoose';
 
 export type ConfigDocument = HydratedDocument<Config>;
 
+export interface VkAppsSettings {
+  vkSecretKey: string;
+}
+
 @Schema()
 export class Config {
   @Prop()
@@ -13,6 +17,9 @@ export class Config {
 
   @Prop()
   textphoto: string;
+
+  @Prop({ type: Object })
+  vkApps: Record<string, VkAppsSettings>;
 }
 
 export const ConfigSchema = SchemaFactory.createForClass(Config);

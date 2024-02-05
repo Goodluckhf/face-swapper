@@ -32,11 +32,15 @@ describe('AuthGuard', () => {
   });
 
   it('should be defined', () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     expect(new VkAuthGuard(service)).toBeDefined();
   });
 
   it('emtpty authorization', async () => {
     const mockExecutionContext = createMock<ExecutionContext>({});
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     expect(new VkAuthGuard(service).canActivate(mockExecutionContext)).toBe(
       false,
     );
@@ -54,6 +58,8 @@ describe('AuthGuard', () => {
       }),
     });
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     expect(new VkAuthGuard(service).canActivate(mockExecutionContext)).toBe(
       true,
     );
@@ -71,6 +77,8 @@ describe('AuthGuard', () => {
       }),
     });
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     expect(new VkAuthGuard(service).canActivate(mockExecutionContext)).toBe(
       false,
     );

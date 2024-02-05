@@ -1,46 +1,35 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import * as crypto from 'crypto';
 import { PinoLogger } from 'nestjs-pino';
+import { VkAppSettingsService } from './vk-app-settings.service';
 
 @Injectable()
 export class VkRequestAuthGuard implements CanActivate {
   constructor(
-    private readonly configService: ConfigService,
+    private readonly vkAppSettingsService: VkAppSettingsService,
     private readonly logger: PinoLogger,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
-      return this.checkSign(context);
+      return await this.checkSign(context);
     } catch (error) {
       this.logger.error('VkRequestAuthGuard error', error);
       return false;
     }
   }
 
-  private getUser(request: Request): string | null {
-    const authorization = request.headers['authorization'];
-    if (!authorization) return null;
-
-    const token = authorization
-      .split('&')
-      .find((item) => /vk_user_id/.test(item));
-    if (token) {
-      return token.split('=')[1];
-    }
-    return null;
-  }
-
-  private checkSign(context: ExecutionContext): boolean {
-    const secretKey = this.configService.get('VK_SECRET_KEY');
-    // const adminUserId = this.configService.get('VK_ADMIN_USER_ID');
-    const vkMiniAppId = this.configService.get('VK_MINI_APP_ID');
+  private async checkSign(context: ExecutionContext): Promise<boolean> {
     const req: Request = context.switchToHttp().getRequest();
+    const vkAppSettings = await this.vkAppSettingsService.getAppSettings(req);
+    if (!vkAppSettings) {
+      this.logger.error('VkRequestAuthGuard there is not vkAppSettings');
+      return false;
+    }
+
     const { ts, sign, ...signPayload } = req.body;
-    const user = this.getUser(req);
-    if (!ts || !sign || !user) {
+    if (!ts || !sign) {
       this.logger.warn('SIGN | there is not ts or sign', {
         body: req.body,
       });
@@ -55,10 +44,10 @@ export class VkRequestAuthGuard implements CanActivate {
       '',
     );
     const hashParams = {
-      app_id: vkMiniAppId,
+      app_id: vkAppSettings.appId,
       request_id: formatedPayload,
       ts,
-      user_id: user,
+      user_id: vkAppSettings.userId,
     };
 
     const hashParamsString = Object.entries(hashParams)
@@ -74,7 +63,7 @@ export class VkRequestAuthGuard implements CanActivate {
       }, '');
 
     const paramsHash = crypto
-      .createHmac('sha256', secretKey)
+      .createHmac('sha256', vkAppSettings.appSecret)
       .update(hashParamsString)
       .digest()
       .toString('base64')
@@ -86,7 +75,7 @@ export class VkRequestAuthGuard implements CanActivate {
 
     if (!result) {
       this.logger.warn(
-        `SIGN_INCORRECT [paramsHash:${paramsHash}] | [sign:${sign}] | hashParamsString: ${hashParamsString} | formatedPayload: ${formatedPayload} | ts:${ts}`,
+        `SIGN_INCORRECT [paramsHash:${paramsHash}] | [sign:${sign}] | hashParamsString: ${hashParamsString} | formatedPayload: ${formatedPayload} | ts:${ts} app_id: ${vkAppSettings.appId}`,
       );
     }
 
