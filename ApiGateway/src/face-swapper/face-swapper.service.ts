@@ -123,7 +123,6 @@ export class FaceSwapperService {
 
       return {
         groupids: config.groupids,
-        gr: `https://vk.com/app/${this.configService.get('MINI_APP_ID')}`,
         result: data.image,
         basePhoto: image.basePhoto,
         textphoto: config.textphoto,

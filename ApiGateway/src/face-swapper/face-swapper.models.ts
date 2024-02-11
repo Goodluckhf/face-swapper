@@ -11,7 +11,6 @@ export interface JobResult {
 
 export interface Result {
   groupids: number[];
-  gr: string;
   result: string;
   basePhoto: BasePhoto;
   textphoto: string;
