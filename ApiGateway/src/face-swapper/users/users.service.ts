@@ -81,8 +81,7 @@ export class UsersService {
     }
 
     const extraGenerationAvailable =
-      user?.lastSubscription?.getDate() !== new Date().getDate() &&
-      user.limit < 2;
+      user?.lastSubscription?.getDate() !== new Date().getDate();
 
     const config = await this.ConfigModel.findOne();
     const availableGroups = config.groupids.filter((id) => {
