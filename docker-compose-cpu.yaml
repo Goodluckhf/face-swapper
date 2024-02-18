@@ -1,0 +1,294 @@
+version: "2"
+
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '5m'
+    max-file: '1'
+
+x-environment: &env
+  - CELERY_BROKER_URL=redis://redis:6379/0
+  - CELERY_RESULT_BACKEND=redis://redis:6379/0
+  - ACCESS_KEY=minioadmin
+  - SECRET_KEY=minioadmin
+  - ENDPOINT=minio:9000
+  - BUCKET=data
+
+services:
+  inswapper:
+    image: just1ce/inswapper-py-api:1.0.0
+    deploy:
+      replicas: 5
+    networks:
+      - app-net
+    build:
+      context: ./InswapperService
+      dockerfile: app.dockerfile
+    command: uvicorn main:app --host 0.0.0.0
+    restart: unless-stopped
+    environment: *env
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 172.19.0.136:24224
+        tag: default.inswapper
+  api:
+    image: just1ce/inswapper-api-gateway:1.0.0
+    deploy:
+      replicas: 5
+    networks:
+      - app-net
+    build:
+      context: ./ApiGateway
+      dockerfile: app.dockerfile
+    environment:
+      - API=http://inswapper:8000
+      - MONGO=mongodb://root:example@mongo:27017/
+      - ACCESS_KEY=minioadmin
+      - SECRET_KEY=minioadmin
+      - ENDPOINT=minio
+      - PORT=9000
+      - BUCKET=data
+      - PREFIX=base-images
+    restart: unless-stopped
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 172.19.0.136:24224
+        tag: json.api
+  minio:
+    image: minio/minio
+    networks:
+      - app-net
+    ports:
+      - 127.0.0.1:9090:9090
+      - 172.19.0.136:9000:9000
+    volumes:
+      - minio_storage:/data
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server --console-address ":9090" /data
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 172.19.0.136:24224
+        tag: default.minio
+  cdn:
+    image: nginxinc/nginx-s3-gateway:latest-20231222
+    networks:
+      - app-net
+    restart: unless-stopped
+    environment:
+      ALLOW_DIRECTORY_LIST: "false"
+      AWS_SIGS_VERSION: 2
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET_NAME: data
+      S3_REGION: us-east-1
+      S3_SERVER_PORT: 9000
+      S3_SERVER_PROTO: http
+      S3_SERVER: minio
+      S3_STYLE: path
+      PROXY_CACHE_MAX_SIZE: 1g
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 172.19.0.136:24224
+        tag: default.cdn
+  reverse-proxy:
+    image: just1ce/inswapper-reverse-proxy:1.0.0
+    networks:
+      - app-net
+    volumes:
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+    build:
+      context: ./reverse-proxy-nginx
+      dockerfile: ./dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    restart: unless-stopped
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 172.19.0.136:24224
+        tag: default.reverse-proxy
+
+  redis:
+    restart: unless-stopped
+    networks:
+      - app-net
+    image: redis:7.0.5-alpine
+    volumes:
+      - redis-volume:/data
+    ports:
+      - 172.19.0.136:6379:6379
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 172.19.0.136:24224
+        tag: default.redis
+
+  mongo:
+    image: mongo:4.2
+    restart: always
+    networks:
+      - app-net
+    ports:
+      - 127.0.0.1:27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo_storage:/data/db
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 172.19.0.136:24224
+        tag: default.mongo
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+  process-exporter:
+    image: ncabatoff/process-exporter
+    container_name: process-exporter
+    privileged: true
+    restart: always
+    networks:
+      - app-net
+    volumes:
+      - /proc:/host/proc
+      - ./process-exporter:/config
+    command: --procfs /host/proc -config.path /config/all.yml --web.listen-address=:9256
+    logging: *default-logging
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:v1.7.0
+    restart: always
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    logging: *default-logging
+    networks:
+      - app-net
+  prometheus:
+    image: just1ce/inswapper-prometheus:1.0.0
+    container_name: prometheus
+    networks:
+      - app-net
+    build:
+      context: ./prometheus
+      dockerfile: ./Dockerfile
+    volumes:
+      - prometheus-data:/prometheus
+    restart: always
+    logging: *default-logging
+  nginx-exporter:
+    container_name: nginx-exporter
+    image: sophos/nginx-vts-exporter:v0.10.7
+    restart: always
+    logging: *default-logging
+    networks:
+      - app-net
+    env_file:
+      - .env.infra
+  celery-exporter:
+    container_name: celery-exporter
+    image: danihodovic/celery-exporter
+    restart: always
+    logging: *default-logging
+    networks:
+      - app-net
+    environment:
+      - CE_BROKER_URL=redis://redis:6379/0
+  mongodb-exporter:
+    container_name: mongodb-exporter
+    image: percona/mongodb_exporter:0.40
+    command: "--mongodb.uri=mongodb://root:example@mongo:27017"
+    restart: always
+    env_file:
+      - .env.infra
+    networks:
+      - app-net
+    logging: *default-logging
+  grafana:
+    container_name: grafana
+    restart: always
+    image: grafana/grafana:10.2.3
+    networks:
+      - app-net
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana-data:/var/lib/grafana
+    logging: *default-logging
+    env_file:
+      - .env.infra
+  fluentd:
+    image: just1ce/inswapper-fluentd:v0.1.0
+    build:
+      context: ./fluentd
+      dockerfile: ./Dockerfile
+    ports:
+      - 172.19.0.136:24224:24224
+      - 172.19.0.136:24224:24224/udp
+    logging: *default-logging
+    networks:
+      - app-net
+  elasticsearch:
+    image: elasticsearch:7.17.16
+    container_name: elasticsearch
+    environment:
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - "discovery.type=single-node"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data
+    networks:
+      - app-net
+    logging: *default-logging
+  kibana-nginx:
+    image: nginx
+    depends_on:
+      - kibana
+    networks:
+      - app-net
+    volumes:
+      - ./.htpasswd:/etc/nginx/.htpasswd
+      - ./kibana/kibana-nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 127.0.0.1:5601:5601
+    logging: *default-logging
+  kibana:
+    image: kibana:7.17.16
+    logging: *default-logging
+    networks:
+      - app-net
+
+volumes:
+  redis-volume:
+  minio_storage:
+  mongo_storage:
+  prometheus-data:
+  grafana-data:
+  elastic-data:
+
+
+networks:
+  app-net:
+    external: true
