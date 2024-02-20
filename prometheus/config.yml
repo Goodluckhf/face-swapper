@@ -28,12 +28,9 @@ scrape_configs:
 
     honor_labels: true
     metrics_path: '/federate'
-
     params:
       'match[]':
-        - '{job="prometheus"}'
-        - '{__name__=~"job:.*"}'
+        - '{__name__=~".*"}'
 
     static_configs:
-      - targets:
-        - '172.19.0.188:9090'
+      - targets: ['192.168.0.21:9090']
