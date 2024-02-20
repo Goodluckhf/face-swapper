@@ -30,7 +30,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 172.19.0.136:24224
+        fluentd-address: 192.168.0.16:24224
         tag: default.inswapper
   api:
     image: just1ce/inswapper-api-gateway:1.0.0
@@ -54,7 +54,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 172.19.0.136:24224
+        fluentd-address: 192.168.0.16:24224
         tag: json.api
   minio:
     image: minio/minio
@@ -62,7 +62,7 @@ services:
       - app-net
     ports:
       - 127.0.0.1:9090:9090
-      - 172.19.0.136:9000:9000
+      - 192.168.0.16:9000:9000
     volumes:
       - minio_storage:/data
     restart: unless-stopped
@@ -73,7 +73,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 172.19.0.136:24224
+        fluentd-address: 192.168.0.16:24224
         tag: default.minio
   cdn:
     image: nginxinc/nginx-s3-gateway:latest-20231222
@@ -95,7 +95,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 172.19.0.136:24224
+        fluentd-address: 192.168.0.16:24224
         tag: default.cdn
   reverse-proxy:
     image: just1ce/inswapper-reverse-proxy:1.0.0
@@ -114,7 +114,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 172.19.0.136:24224
+        fluentd-address: 192.168.0.16:24224
         tag: default.reverse-proxy
 
   redis:
@@ -125,11 +125,11 @@ services:
     volumes:
       - redis-volume:/data
     ports:
-      - 172.19.0.136:6379:6379
+      - 192.168.0.16:6379:6379
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 172.19.0.136:24224
+        fluentd-address: 192.168.0.16:24224
         tag: default.redis
 
   mongo:
@@ -147,7 +147,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 172.19.0.136:24224
+        fluentd-address: 192.168.0.16:24224
         tag: default.mongo
   certbot:
     image: certbot/certbot:latest
@@ -241,8 +241,8 @@ services:
       context: ./fluentd
       dockerfile: ./Dockerfile
     ports:
-      - 172.19.0.136:24224:24224
-      - 172.19.0.136:24224:24224/udp
+      - 192.168.0.16:24224:24224
+      - 192.168.0.16:24224:24224/udp
     logging: *default-logging
     networks:
       - app-net

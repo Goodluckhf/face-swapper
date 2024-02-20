@@ -8,11 +8,11 @@ x-default-logging: &default-logging
 
 
 x-environment: &env
-  - CELERY_BROKER_URL=redis://172.19.0.136:6379/0
-  - CELERY_RESULT_BACKEND=redis://172.19.0.136:6379/0
+  - CELERY_BROKER_URL=redis://192.168.0.16:6379/0
+  - CELERY_RESULT_BACKEND=redis://192.168.0.16:6379/0
   - ACCESS_KEY=minioadmin
   - SECRET_KEY=minioadmin
-  - ENDPOINT=172.19.0.136:9000
+  - ENDPOINT=192.168.0.16:9000
   - BUCKET=data
 
 services:
@@ -33,7 +33,7 @@ services:
     logging:
       driver: 'fluentd'
       options:
-        fluentd-address: 172.19.0.136:24224
+        fluentd-address: 192.168.0.16:24224
         tag: default.inswapper-worker
 
   prometheus:
@@ -49,7 +49,7 @@ services:
     restart: always
     logging: *default-logging
     ports:
-      - 172.19.0.188:9090:9090
+      - 192.168.0.21:9090:9090
 
   process-exporter:
     image: ncabatoff/process-exporter
