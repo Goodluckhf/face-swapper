@@ -49,7 +49,7 @@ services:
     restart: always
     logging: *default-logging
     ports:
-      - 172.19.0.137:9090:9090
+      - 172.19.0.188:9090:9090
 
   process-exporter:
     image: ncabatoff/process-exporter
