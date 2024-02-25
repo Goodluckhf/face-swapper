@@ -22,11 +22,32 @@ services:
       - app-net
     command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
     deploy:
+      replicas: 2
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              device_ids: ["GPU-977e7519-d2dc-9b68-becf-9be663ed8392"]
+              capabilities: [gpu]
+    environment: *env
+    restart: unless-stopped
+    logging:
+      driver: 'fluentd'
+      options:
+        fluentd-address: 192.168.0.16:24224
+        tag: default.inswapper-worker
+  worker1:
+    image: just1ce/inswapper-py-worker:1.0.0
+    networks:
+      - app-net
+    command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
+    deploy:
+      replicas: 2
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["GPU-02886a61-c639-9209-6fce-e66129078c13"]
               capabilities: [gpu]
     environment: *env
     restart: unless-stopped
