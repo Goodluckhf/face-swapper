@@ -151,6 +151,8 @@ services:
         tag: default.mongo
   certbot:
     image: certbot/certbot:latest
+    networks:
+      - app-net
     volumes:
       - ./certbot/www/:/var/www/certbot/:rw
       - ./certbot/conf/:/etc/letsencrypt/:rw
@@ -291,4 +293,6 @@ volumes:
 
 networks:
   app-net:
-    external: true
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
