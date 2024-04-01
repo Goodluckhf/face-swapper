@@ -1,0 +1,138 @@
+version: "2"
+
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '5m'
+    max-file: '1'
+
+
+x-environment: &env
+  - CELERY_BROKER_URL=redis://redis:6379/0
+  - CELERY_RESULT_BACKEND=redis://redis:6379/0
+  - ACCESS_KEY=minioadmin
+  - SECRET_KEY=minioadmin
+  - ENDPOINT=minio:9000
+  - BUCKET=data
+
+services:
+  worker:
+    image: just1ce/inswapper-py-worker:1.0.0-dev
+    build:
+      context: ./InswapperService
+      dockerfile: worker.cpu.dockerfile
+    networks:
+      - app-net
+    command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
+    environment: *env
+    restart: unless-stopped
+    logging: *default-logging
+    volumes:
+      - ./InswapperService/:/usr/src/app/:ro
+  inswapper:
+    image: just1ce/inswapper-py-api:1.0.0
+    networks:
+      - app-net
+    build:
+      context: ./InswapperService
+      dockerfile: app.dockerfile
+    command: uvicorn main:app --host 0.0.0.0
+    restart: unless-stopped
+    environment: *env
+    logging: *default-logging
+  api:
+    image: just1ce/inswapper-api-gateway:1.0.0
+    networks:
+      - app-net
+    build:
+      context: ./ApiGateway
+      dockerfile: app.dockerfile
+    environment:
+      - API=http://inswapper:8000
+      - MONGO=mongodb://root:example@mongo:27017/
+      - ACCESS_KEY=minioadmin
+      - SECRET_KEY=minioadmin
+      - ENDPOINT=minio
+      - PORT=9000
+      - BUCKET=data
+      - PREFIX=base-images
+    restart: unless-stopped
+    logging: *default-logging
+  minio:
+    image: minio/minio
+    networks:
+      - app-net
+    ports:
+      - 9090:9090
+    volumes:
+      - minio_storage:/data
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server --console-address ":9090" /data
+    logging: *default-logging
+  cdn:
+    image: nginxinc/nginx-s3-gateway:latest-20231222
+    networks:
+      - app-net
+    restart: unless-stopped
+    environment:
+      ALLOW_DIRECTORY_LIST: "false"
+      AWS_SIGS_VERSION: 2
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET_NAME: data
+      S3_REGION: us-east-1
+      S3_SERVER_PORT: 9000
+      S3_SERVER_PROTO: http
+      S3_SERVER: minio
+      S3_STYLE: path
+      PROXY_CACHE_MAX_SIZE: 1g
+    logging: *default-logging
+  reverse-proxy:
+    image: just1ce/inswapper-reverse-proxy:1.0.0-dev
+    networks:
+      - app-net
+    build:
+      context: ./reverse-proxy-nginx
+      dockerfile: ./dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    restart: unless-stopped
+    logging: *default-logging
+    volumes:
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+  redis:
+    restart: unless-stopped
+    networks:
+      - app-net
+    image: redis:7.0.5-alpine
+    volumes:
+      - redis-volume:/data
+    ports:
+      - 6379:6379
+    logging: *default-logging
+  mongo:
+    image: mongo:4.2
+    restart: always
+    networks:
+      - app-net
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo_storage:/data/db
+    logging: *default-logging
+
+networks:
+  app-net:
+
+volumes:
+  mongo_storage:
+  redis-volume:
+  minio_storage:

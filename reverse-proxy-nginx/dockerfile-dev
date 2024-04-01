@@ -1,0 +1,2 @@
+FROM hypoport/nginx-vts
+COPY ./nginx-dev.conf /etc/nginx/nginx.conf
