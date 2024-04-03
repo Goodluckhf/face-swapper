@@ -82,7 +82,7 @@ RUN cd /tmp && \
     rm ./cmake-3.14.4-Linux-x86_64.sh
 
 # Download NGC client
-RUN cd /usr/local/bin && wget https://ngc.nvidia.com/downloads/ngccli_cat_linux.zip && unzip ngccli_cat_linux.zip && chmod u+x ngc-cli/ngc && rm ngccli_cat_linux.zip ngc-cli.md5 && echo "no-apikey\nascii\n" | ngc-cli/ngc config set
+RUN cd /usr/local/bin && wget --content-disposition https://api.ngc.nvidia.com/v2/resources/nvidia/ngc-apps/ngc_cli/versions/3.38.0/files/ngccli_linux.zip -O ngccli_linux.zip && unzip ngccli_linux.zip && chmod u+x ngc-cli/ngc && rm ngccli_linux.zip ngc-cli.md5 && echo "no-apikey\nascii\n" | ngc-cli/ngc config set
 
 # Set environment and working directory
 ENV TRT_LIBPATH /usr/lib/x86_64-linux-gnu

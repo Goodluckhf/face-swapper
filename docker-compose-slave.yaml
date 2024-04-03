@@ -17,7 +17,7 @@ x-environment: &env
 
 services:
   worker:
-    image: just1ce/inswapper-py-worker:1.0.0
+    image: just1ce/inswapper-py-worker:1.0.1
     networks:
       - app-net
     command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
@@ -37,7 +37,7 @@ services:
         fluentd-address: 192.168.0.16:24224
         tag: default.inswapper-worker
   worker1:
-    image: just1ce/inswapper-py-worker:1.0.0
+    image: just1ce/inswapper-py-worker:1.0.1
     networks:
       - app-net
     command: [ "celery", "-A", "worker", "worker", "-l", "info", "--pool=solo" ]
