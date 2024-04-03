@@ -27,6 +27,7 @@ def set_realesrgan():
         from basicsr.archs.rrdbnet_arch import RRDBNet
         from basicsr.utils.realesrgan_utils import RealESRGANer
         model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=2)
+        half = True if torch.cuda.is_available() else False
         bg_upsampler = RealESRGANer(
             scale=2,
             model_path='https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth',
@@ -34,7 +35,7 @@ def set_realesrgan():
             tile=args.bg_tile,
             tile_pad=40,
             pre_pad=0,
-            half=True)  # need to set False in CPU mode
+            half=half)  # need to set False in CPU mode
     return bg_upsampler
 
 if __name__ == '__main__':

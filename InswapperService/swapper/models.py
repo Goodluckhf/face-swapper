@@ -33,7 +33,8 @@ class Models(Task):
             self.codeformer_net.to(self.device)
             self.codeformer_net.load_state_dict(self.checkpoint)
             self.codeformer_net.eval()
-            self.face_det = init_detection_model('retinaface_resnet50', half=True, device=self.device)
+            half = True if torch.cuda.is_available() else False
+            self.face_det = init_detection_model('retinaface_resnet50', half=half, device=self.device)
             self.face_parse = init_parsing_model(model_name='parsenet', device=self.device)
         except Exception as ex:
             print(f"init models error, {ex}")
