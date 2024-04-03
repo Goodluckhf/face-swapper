@@ -42,6 +42,8 @@ def get_center_face(det_faces, h=0, w=0, center=None):
     center_idx = center_dist.index(min(center_dist))
     return det_faces[center_idx], center_idx
 
+def get_left_face(det_faces):
+    return det_faces[0], 0
 
 class FaceRestoreHelper(object):
     """Helper for the face restoration pipeline (base class)."""
@@ -135,6 +137,7 @@ class FaceRestoreHelper(object):
 
     def get_face_landmarks_5(self,
                              only_keep_largest=False,
+                             only_left_face=True,
                              only_center_face=False,
                              resize=None,
                              blur_ratio=0.01,
@@ -181,7 +184,9 @@ class FaceRestoreHelper(object):
             h, w, _ = self.input_img.shape
             self.det_faces, center_idx = get_center_face(self.det_faces, h, w)
             self.all_landmarks_5 = [self.all_landmarks_5[center_idx]]
-
+        elif only_left_face:
+            self.det_faces, left_idx = get_left_face(self.det_faces)
+            self.all_landmarks_5 = [self.all_landmarks_5[left_idx]]
         # pad blurry images
         if self.pad_blur:
             self.pad_input_imgs = []

@@ -59,7 +59,7 @@ def face_restoration(img, background_enhance, face_upsample, upscale, codeformer
     # try: # global try
         # take the default setting for the demo
     has_aligned = False
-    only_center_face = True
+    only_center_face = False
     draw_box = False
 
     background_enhance = background_enhance if background_enhance is not None else True
@@ -90,7 +90,6 @@ def face_restoration(img, background_enhance, face_upsample, upscale, codeformer
         face_helper.read_image(img)
         # get face landmarks for each face
         num_det_faces = face_helper.get_face_landmarks_5(
-            only_keep_largest=True,
             only_center_face=only_center_face,
             resize=640,
             eye_dist_threshold=5

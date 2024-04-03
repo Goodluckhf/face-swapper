@@ -38,7 +38,7 @@ def process_image(self, source_file, target: str):
     target_response.close()
     target_response.release_conn()
 
-    result_image = process([source_img], target_img, '0', '-1', self.models)
+    result_image = process([source_img], target_img, '0', '0', self.models)
     endFaceswap = timer()
     print(f"face swap end: {endFaceswap - startFaceswap}s")
     startScale = timer()
