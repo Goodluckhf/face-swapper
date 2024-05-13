@@ -76,7 +76,7 @@ export class UsersService {
     const user = await this.getUser(id);
     const todayGenerated = user?.lastUsage?.getDate() === new Date().getDate();
     if (!todayGenerated && user.limit < 1) {
-      user.limit += 1;
+      user.limit += 15;
       await user.save();
     }
 
